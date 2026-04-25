@@ -55,6 +55,8 @@ create index if not exists idx_products_is_active on products(is_active);
 -- 2. RPC: place_order
 -- ============================================================
 
+drop function if exists place_order(jsonb, text);
+
 create or replace function place_order(
   p_items jsonb,
   p_customer_name text
@@ -145,6 +147,8 @@ $$;
 -- ============================================================
 
 create extension if not exists pg_cron with schema extensions;
+
+drop function if exists cancel_expired_orders();
 
 create or replace function cancel_expired_orders()
 returns table(cancelled_count integer)

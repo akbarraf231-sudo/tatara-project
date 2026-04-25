@@ -1,4 +1,6 @@
 -- RPC function to place an order atomically
+drop function if exists place_order(jsonb, text);
+
 create or replace function place_order(
   p_items jsonb,
   p_customer_name text

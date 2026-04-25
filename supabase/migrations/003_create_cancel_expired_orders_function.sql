@@ -2,6 +2,8 @@
 create extension if not exists pg_cron with schema extensions;
 
 -- Function to cancel expired orders and return stock
+drop function if exists cancel_expired_orders();
+
 create or replace function cancel_expired_orders()
 returns table(cancelled_count integer)
 language plpgsql
