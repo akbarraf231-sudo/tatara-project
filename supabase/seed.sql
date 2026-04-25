@@ -3,18 +3,15 @@
 
 -- Sample products
 insert into products (name, price, stock, is_active) values
-  ('Espresso', 25000, 50, true),
-  ('Cappuccino', 35000, 30, true),
-  ('Latte', 38000, 30, true),
-  ('Americano', 28000, 40, true),
-  ('Mocha', 42000, 25, true),
-  ('Croissant', 22000, 20, true),
-  ('Chocolate Cake', 45000, 15, true),
-  ('Tiramisu', 50000, 10, true),
-  ('Iced Tea', 18000, 100, true),
-  ('Out of Stock Item', 30000, 0, true),
-  ('Inactive Item', 25000, 50, false);
+  ('Croissant', 25000, 50, true),
+  ('Donut Cokelat', 15000, 100, true),
+  ('Roti Manis', 18000, 75, true),
+  ('Kue Ulang Tahun', 150000, 10, true),
+  ('Roti Tawar', 35000, 30, true),
+  ('Pudding', 20000, 60, true),
+  ('Brownies', 22000, 80, true),
+  ('Bolu Kukus', 25000, 40, true);
 
 -- Initial settings
 insert into settings (whatsapp_number, location_link) values
-  ('+6281234567890', 'https://maps.google.com/?q=-6.2,106.8');
+  ('+6285801299758', 'https://maps.google.com/maps?q=Sinar+Jaya+Bakery');

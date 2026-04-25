@@ -15,5 +15,5 @@ ON CONFLICT DO NOTHING;
 
 -- Sample Settings
 INSERT INTO settings (whatsapp_number, location_link) VALUES
-  ('+62812345678', 'https://maps.google.com/maps?q=Sinar+Jaya+Bakery')
+  ('+6285801299758', 'https://maps.google.com/maps?q=Sinar+Jaya+Bakery')
 ON CONFLICT DO NOTHING;
