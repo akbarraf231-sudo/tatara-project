@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cartContext';
+import { PaymentModal } from './PaymentModal';
 
 export function Cart() {
   const { items, removeItem, updateQty, total, clearCart } = useCart();
   const [customerName, setCustomerName] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+  const [error, setError] = useState(null);
 
   async function handleCheckout() {
     setSubmitting(true);
-    setResult(null);
+    setError(null);
 
     try {
       const res = await fetch('/api/orders', {
@@ -29,118 +32,127 @@ export function Cart() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setResult({ type: 'error', message: data.error || 'Failed to place order' });
+        setError(data.error || 'Failed to place order');
         return;
       }
 
-      setResult({
-        type: 'success',
-        message: `Order placed! ID: ${data.order_id}`,
-        order: data,
-      });
-      clearCart?.();
-      setCustomerName('');
+      setOrderId(data.order_id);
+      setShowPayment(true);
     } catch (err) {
-      setResult({ type: 'error', message: err.message });
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
   }
 
+  function handlePaymentClose() {
+    setShowPayment(false);
+    clearCart();
+    setCustomerName('');
+    setOrderId(null);
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 sticky top-6 h-fit">
-      <h2 className="text-2xl font-bold mb-4">Cart</h2>
+    <>
+      <div className="bg-white rounded-lg shadow-md p-6 sticky top-24 h-fit border-2 border-amber-100">
+        <h2 className="text-2xl font-bold mb-4 text-amber-900">Your Cart</h2>
 
-      {items.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">Your cart is empty</p>
-      ) : (
-        <>
-          <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-            {items.map((item) => (
-              <div
-                key={item.product_id}
-                className="flex items-center justify-between border-b pb-4"
-              >
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-800">{item.name}</p>
-                  <p className="text-sm text-gray-600">
-                    ${item.price.toFixed(2)} each
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 mx-4">
-                  <button
-                    onClick={() => updateQty(item.product_id, item.qty - 1)}
-                    className="bg-gray-200 hover:bg-gray-300 w-8 h-8 rounded flex items-center justify-center transition-colors"
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    min="1"
-                    value={item.qty}
-                    onChange={(e) =>
-                      updateQty(item.product_id, parseInt(e.target.value) || 1)
-                    }
-                    className="w-12 text-center border rounded py-1"
-                  />
-                  <button
-                    onClick={() => updateQty(item.product_id, item.qty + 1)}
-                    className="bg-gray-200 hover:bg-gray-300 w-8 h-8 rounded flex items-center justify-center transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => removeItem(item.product_id)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
+        {items.length === 0 ? (
+          <p className="text-amber-700 text-center py-8">Your cart is empty</p>
+        ) : (
+          <>
+            <div className="space-y-3 mb-6 max-h-80 overflow-y-auto">
+              {items.map((item) => (
+                <div
+                  key={item.product_id}
+                  className="flex items-center justify-between border-b border-amber-100 pb-3"
                 >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-amber-900 truncate">{item.name}</p>
+                    <p className="text-sm text-amber-700">
+                      Rp {item.price.toLocaleString('id-ID')}
+                    </p>
+                  </div>
 
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-semibold">Total:</span>
-              <span className="text-2xl font-bold text-blue-600">
-                ${total.toFixed(2)}
-              </span>
+                  <div className="flex items-center gap-2 mx-2">
+                    <button
+                      onClick={() => updateQty(item.product_id, item.qty - 1)}
+                      className="bg-amber-100 hover:bg-amber-200 w-7 h-7 rounded flex items-center justify-center transition-colors text-amber-900"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.qty}
+                      onChange={(e) =>
+                        updateQty(item.product_id, parseInt(e.target.value) || 1)
+                      }
+                      className="w-10 text-center border border-amber-200 rounded py-1 text-amber-900"
+                    />
+                    <button
+                      onClick={() => updateQty(item.product_id, item.qty + 1)}
+                      className="bg-amber-100 hover:bg-amber-200 w-7 h-7 rounded flex items-center justify-center transition-colors text-amber-900"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => removeItem(item.product_id)}
+                    className="text-red-600 hover:text-red-800 font-semibold text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
 
-            <input
-              type="text"
-              placeholder="Your name"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full border rounded-lg py-2 px-3 mb-3"
-              disabled={submitting}
-            />
+            <div className="border-t-2 border-amber-200 pt-4">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-semibold text-amber-900">Total:</span>
+                <span className="text-2xl font-bold text-amber-700">
+                  Rp {total.toLocaleString('id-ID')}
+                </span>
+              </div>
 
-            <button
-              onClick={handleCheckout}
-              disabled={submitting || !customerName.trim()}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-            >
-              {submitting ? 'Placing order...' : 'Checkout'}
-            </button>
-          </div>
-        </>
-      )}
+              <input
+                type="text"
+                placeholder="Your name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full border-2 border-amber-200 rounded-lg py-2 px-3 mb-3 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                disabled={submitting}
+              />
 
-      {result && (
-        <div
-          className={`mt-4 p-3 rounded-lg ${
-            result.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}
-        >
-          {result.message}
-        </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-lg text-sm mb-3">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleCheckout}
+                disabled={submitting || !customerName.trim()}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+              >
+                {submitting ? 'Processing...' : 'Proceed to Payment'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {orderId && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={handlePaymentClose}
+          orderId={orderId}
+          customerName={customerName}
+          items={items}
+          total={total}
+        />
       )}
-    </div>
+    </>
   );
 }

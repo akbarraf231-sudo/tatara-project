@@ -4,10 +4,11 @@ import { useCart } from '@/lib/cartContext';
 
 export function ProductCard({ product }) {
   const { addItem } = useCart();
+  const inStock = product.stock > 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow border-2 border-amber-100">
+      <div className="w-full h-48 bg-amber-100 flex items-center justify-center">
         {product.image ? (
           <img
             src={product.image}
@@ -15,21 +16,29 @@ export function ProductCard({ product }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="text-gray-400">No image</div>
+          <div className="text-amber-400 text-4xl">🥐</div>
         )}
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-lg font-semibold text-amber-900 mb-2">
           {product.name}
         </h3>
-        <p className="text-2xl font-bold text-blue-600 mb-4">
-          ${product.price.toFixed(2)}
+        <p className="text-sm text-amber-700 mb-3">
+          {inStock ? `${product.stock} available` : 'Out of stock'}
+        </p>
+        <p className="text-2xl font-bold text-amber-700 mb-4">
+          Rp {product.price.toLocaleString('id-ID')}
         </p>
         <button
           onClick={() => addItem(product)}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          disabled={!inStock}
+          className={`w-full font-semibold py-2 px-4 rounded-lg transition-colors ${
+            inStock
+              ? 'bg-amber-600 hover:bg-amber-700 text-white'
+              : 'bg-gray-300 cursor-not-allowed text-gray-600'
+          }`}
         >
-          Add to Cart
+          {inStock ? 'Add to Cart' : 'Out of Stock'}
         </button>
       </div>
     </div>

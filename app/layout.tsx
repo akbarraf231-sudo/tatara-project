@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/lib/cartContext";
+import { Navbar } from "@/components/Navbar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Tatara Store",
-  description: "Order management system",
+  title: "Sinar Jaya Bakery",
+  description: "Premium bakery products",
 };
 
 export default function RootLayout({ children }) {
@@ -23,8 +24,11 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <CartProvider>{children}</CartProvider>
+      <body className="min-h-full flex flex-col bg-amber-50">
+        <CartProvider>
+          <Navbar />
+          {children}
+        </CartProvider>
       </body>
     </html>
   );
