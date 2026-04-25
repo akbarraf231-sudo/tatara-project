@@ -1,103 +1,36 @@
-# Tatara Project - Supabase Schema
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Overview
+## Getting Started
 
-This project contains the Supabase schema and database functions for the Tatara order management system.
+First, run the development server:
 
-## Schema
-
-### Tables
-
-#### products
-- `id` (uuid, primary key)
-- `name` (text, required)
-- `price` (numeric, required)
-- `stock` (integer, default 0)
-- `is_active` (boolean, default true)
-- `created_at` (timestamp)
-- `updated_at` (timestamp)
-
-#### orders
-- `id` (uuid, primary key)
-- `customer_name` (text, required)
-- `total` (numeric, required)
-- `status` (text, default 'pending') - values: pending, cancelled, completed
-- `created_at` (timestamp)
-- `expires_at` (timestamp, required) - order expires 15 minutes after creation
-- `updated_at` (timestamp)
-
-#### order_items
-- `id` (uuid, primary key)
-- `order_id` (uuid, foreign key → orders.id, cascade delete)
-- `product_id` (uuid, foreign key → products.id)
-- `qty` (integer, required)
-- `price` (numeric, required)
-- `created_at` (timestamp)
-
-#### settings
-- `id` (uuid, primary key)
-- `whatsapp_number` (text)
-- `location_link` (text)
-- `created_at` (timestamp)
-- `updated_at` (timestamp)
-
-## RPC Functions
-
-### place_order(items: jsonb, customer_name: text)
-
-Places a new order atomically. **Must be called from backend - do NOT expose to frontend.**
-
-**Input:**
-```json
-{
-  "items": [
-    { "product_id": "uuid-here", "qty": 2 },
-    { "product_id": "uuid-here", "qty": 1 }
-  ],
-  "customer_name": "John Doe"
-}
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-**Logic:**
-1. Validates products exist and are active
-2. Checks stock availability for all items
-3. Returns error if any item has insufficient stock
-4. If all items available:
-   - Creates order with status 'pending' and expires_at = now() + 15 minutes
-   - Reduces product stock
-   - Inserts order items
-5. Returns order_id, total amount, and expiration time
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-**Returns:**
-```json
-{
-  "success": true,
-  "order_id": "uuid",
-  "total": 99.99,
-  "expires_at": "2026-04-25T18:30:00Z"
-}
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### cancel_expired_orders()
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Cancels pending orders that have expired and returns stock to products.
+## Learn More
 
-**Logic:**
-1. Finds all orders with status='pending' and expires_at < now()
-2. Returns stock quantities to products
-3. Updates order status to 'cancelled'
-4. Returns count of cancelled orders
+To learn more about Next.js, take a look at the following resources:
 
-**Scheduled:** Runs automatically every 5 minutes via pg_cron
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Setup
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-1. Apply migrations in order (001, 002, 003)
-2. Ensure pg_cron extension is enabled
-3. Verify scheduled job: `select * from cron.job`
+## Deploy on Vercel
 
-## Security
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- `place_order` is defined with `security definer` to prevent direct stock manipulation from frontend
-- Order placement must go through backend/RPC only
-- Stock changes are atomic - guaranteed consistency
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
