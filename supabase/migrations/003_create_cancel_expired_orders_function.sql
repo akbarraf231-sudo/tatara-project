@@ -42,7 +42,10 @@ begin
 end;
 $$;
 
--- Schedule the function to run every 5 minutes
+-- Unschedule existing job if present, then schedule fresh
+select cron.unschedule('cancel-expired-orders')
+where exists (select 1 from cron.job where jobname = 'cancel-expired-orders');
+
 select cron.schedule(
   'cancel-expired-orders',
   '*/5 * * * *',
