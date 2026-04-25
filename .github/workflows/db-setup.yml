@@ -1,0 +1,37 @@
+name: DB Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Run migrations and seed
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "ERROR: SUPABASE_DB_URL secret not set"
+            echo "Get connection string from: Supabase Dashboard -> Settings -> Database -> Connection string -> URI"
+            exit 1
+          fi
+
+          for f in \
+            supabase/migrations/001_create_schema.sql \
+            supabase/migrations/002_create_place_order_function.sql \
+            supabase/migrations/003_create_cancel_expired_orders_function.sql \
+            supabase/seed.sql
+          do
+            echo "==> Running $f"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+          echo "Done."
