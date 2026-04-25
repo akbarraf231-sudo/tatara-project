@@ -1,9 +1,51 @@
 'use client';
 
+import { useState } from 'react';
 import { useCart } from '@/lib/cartContext';
 
 export function Cart() {
-  const { items, removeItem, updateQty, total } = useCart();
+  const { items, removeItem, updateQty, total, clearCart } = useCart();
+  const [customerName, setCustomerName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+
+  async function handleCheckout() {
+    setSubmitting(true);
+    setResult(null);
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            product_id: item.product_id,
+            qty: item.qty,
+          })),
+          customer_name: customerName,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setResult({ type: 'error', message: data.error || 'Failed to place order' });
+        return;
+      }
+
+      setResult({
+        type: 'success',
+        message: `Order placed! ID: ${data.order_id}`,
+        order: data,
+      });
+      clearCart?.();
+      setCustomerName('');
+    } catch (err) {
+      setResult({ type: 'error', message: err.message });
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 sticky top-6 h-fit">
@@ -67,11 +109,37 @@ export function Cart() {
                 ${total.toFixed(2)}
               </span>
             </div>
-            <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
-              Checkout
+
+            <input
+              type="text"
+              placeholder="Your name"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              className="w-full border rounded-lg py-2 px-3 mb-3"
+              disabled={submitting}
+            />
+
+            <button
+              onClick={handleCheckout}
+              disabled={submitting || !customerName.trim()}
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            >
+              {submitting ? 'Placing order...' : 'Checkout'}
             </button>
           </div>
         </>
+      )}
+
+      {result && (
+        <div
+          className={`mt-4 p-3 rounded-lg ${
+            result.type === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}
+        >
+          {result.message}
+        </div>
       )}
     </div>
   );
