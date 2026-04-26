@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 
-export function SplashScreen() {
+export function SplashScreen({ initialLogoUrl = '' }) {
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('');
+  const [logoUrl] = useState(initialLogoUrl);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -13,19 +13,6 @@ export function SplashScreen() {
     if (shown) {
       setVisible(false);
       return;
-    }
-
-    try {
-      fetch('/api/settings')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d?.data?.site_logo_url) {
-            setLogoUrl(d.data.site_logo_url);
-          }
-        })
-        .catch(() => {});
-    } catch (_) {
-      // Silently fail, use emoji default
     }
 
     const fadeTimer = setTimeout(() => setFadeOut(true), 1800);

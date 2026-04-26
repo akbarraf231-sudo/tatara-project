@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/lib/cartContext';
 import { AdminLoginModal } from './AdminLoginModal';
 
-export function Navbar() {
+export function Navbar({ initialLogoUrl = '' }) {
   const { items } = useCart();
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('');
+  const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const logoClickCount = useRef(0);
   const logoClickTimer = useRef(null);
@@ -23,8 +23,6 @@ export function Navbar() {
         .then((d) => setLogoUrl(d.data?.site_logo_url || ''))
         .catch(() => {});
     };
-
-    fetchLogo();
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {

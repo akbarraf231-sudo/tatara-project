@@ -1,25 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export function FloatingWhatsApp() {
-  const [waNumber, setWaNumber] = useState('');
-
-  useEffect(() => {
-    try {
-      fetch('/api/settings')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d?.data) {
-            const n = d.data.cs_whatsapp_number || d.data.whatsapp_number || '';
-            setWaNumber(n);
-          }
-        })
-        .catch(() => {});
-    } catch (_) {
-      // Silently fail
-    }
-  }, []);
+export function FloatingWhatsApp({ initialWaNumber = '' }) {
+  const [waNumber] = useState(initialWaNumber);
 
   if (!waNumber) return null;
 
