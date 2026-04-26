@@ -6,6 +6,7 @@ export function AdminSettings() {
   const [settings, setSettings] = useState({
     whatsapp_number: '',
     location_link: '',
+    qris_image_url: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,7 +20,11 @@ export function AdminSettings() {
     try {
       const res = await fetch('/api/settings');
       const data = await res.json();
-      setSettings(data.data || {});
+      setSettings({
+        whatsapp_number: data.data?.whatsapp_number || '',
+        location_link: data.data?.location_link || '',
+        qris_image_url: data.data?.qris_image_url || '',
+      });
     } catch (err) {
       console.error('Failed to fetch settings:', err);
     } finally {
@@ -48,7 +53,7 @@ export function AdminSettings() {
         throw new Error(data.error || 'Failed to save settings');
       }
 
-      setMessage({ type: 'success', text: 'Settings saved successfully' });
+      setMessage({ type: 'success', text: 'Settings berhasil disimpan!' });
       setTimeout(() => setMessage(null), 3000);
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -58,52 +63,85 @@ export function AdminSettings() {
   }
 
   if (loading) {
-    return <div className="text-amber-700">Loading settings...</div>;
+    return <div className="text-[#6b4423]">Loading settings...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-amber-900">Settings</h2>
+      <h2 className="text-2xl font-bold text-[#6b4423]">⚙️ Settings</h2>
 
-      <div className="bg-white border-2 border-amber-200 rounded-lg p-6 space-y-6 max-w-2xl">
+      <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 space-y-6 max-w-2xl shadow-md">
         {/* WhatsApp Number */}
         <div>
-          <label htmlFor="wa-number" className="block text-sm font-semibold text-amber-900 mb-2">
-            WhatsApp Number
+          <label htmlFor="wa-number" className="block text-sm font-bold text-[#6b4423] mb-2">
+            📱 WhatsApp Number
           </label>
           <input
             id="wa-number"
             type="text"
-            placeholder="+62 812 3456 7890"
+            placeholder="+6281234567890"
             value={settings.whatsapp_number}
             onChange={(e) =>
               setSettings({ ...settings, whatsapp_number: e.target.value })
             }
-            className="w-full border-2 border-amber-200 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-amber-600"
+            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
           />
-          <p className="text-xs text-amber-700 mt-1">
-            Include country code (e.g., +62 for Indonesia)
+          <p className="text-xs text-[#8b6f47] mt-1">
+            Pakai kode negara (e.g. +62 untuk Indonesia)
           </p>
         </div>
 
         {/* Location Link */}
         <div>
-          <label htmlFor="location" className="block text-sm font-semibold text-amber-900 mb-2">
-            Location Link (Google Maps)
+          <label htmlFor="location" className="block text-sm font-bold text-[#6b4423] mb-2">
+            📍 Location Link (Google Maps)
           </label>
           <input
             id="location"
             type="text"
-            placeholder="https://maps.google.com/..."
+            placeholder="https://maps.app.goo.gl/..."
             value={settings.location_link}
             onChange={(e) =>
               setSettings({ ...settings, location_link: e.target.value })
             }
-            className="w-full border-2 border-amber-200 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-amber-600"
+            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
           />
-          <p className="text-xs text-amber-700 mt-1">
-            Paste your Google Maps link here
+          <p className="text-xs text-[#8b6f47] mt-1">
+            Paste link Google Maps lokasi toko
           </p>
+        </div>
+
+        {/* QRIS Image URL */}
+        <div>
+          <label htmlFor="qris" className="block text-sm font-bold text-[#6b4423] mb-2">
+            💳 QRIS Image URL
+          </label>
+          <input
+            id="qris"
+            type="text"
+            placeholder="https://example.com/qris.png"
+            value={settings.qris_image_url}
+            onChange={(e) =>
+              setSettings({ ...settings, qris_image_url: e.target.value })
+            }
+            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+          />
+          <p className="text-xs text-[#8b6f47] mt-1">
+            Upload QRIS code lo ke imgur.com / cloudinary, terus paste link image-nya di sini
+          </p>
+          {settings.qris_image_url && (
+            <div className="mt-3 p-3 bg-[#f5ebe0] rounded-lg">
+              <p className="text-xs text-[#8b6f47] mb-2">Preview:</p>
+              <img
+                src={settings.qris_image_url}
+                alt="QRIS Preview"
+                className="w-32 h-32 object-contain border-2 border-[#e8d5c4] rounded bg-white"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Messages */}
@@ -123,22 +161,19 @@ export function AdminSettings() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full"
+          className="bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full"
         >
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
         </button>
       </div>
 
       {/* Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
-        <p className="font-semibold mb-2">📝 How to get Google Maps link:</p>
-        <ol className="list-decimal list-inside space-y-1">
-          <li>Open Google Maps</li>
-          <li>Find your location</li>
-          <li>Click "Share" button</li>
-          <li>Copy the link</li>
-          <li>Paste it here</li>
-        </ol>
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-sm text-blue-900 max-w-2xl">
+        <p className="font-bold mb-2">💡 Tips:</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li><strong>Google Maps Link:</strong> Buka Google Maps → cari toko → Share → Copy link</li>
+          <li><strong>QRIS:</strong> Upload gambar QRIS lo ke <a href="https://imgur.com/upload" target="_blank" rel="noopener noreferrer" className="underline font-semibold">imgur.com</a> → Right-click image → Copy image address → Paste di sini</li>
+        </ul>
       </div>
     </div>
   );

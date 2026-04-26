@@ -24,7 +24,7 @@ export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setError(data.error || 'Invalid password');
+        setError(data.error || 'Password salah');
         return;
       }
 
@@ -39,13 +39,17 @@ export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-amber-900 mb-4">Admin Login</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <div className="text-center mb-4">
+          <div className="text-4xl mb-2">🔐</div>
+          <h2 className="text-2xl font-bold text-[#6b4423]">Admin Login</h2>
+          <p className="text-sm text-[#8b6f47]">Sinar Jaya Bakery</p>
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-semibold text-[#6b4423] mb-1">
               Password
             </label>
             <input
@@ -53,15 +57,16 @@ export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
+              placeholder="Masukkan password admin"
               disabled={loading}
-              className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-amber-600"
+              autoFocus
+              className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
             />
           </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm">
-              {error}
+              ⚠️ {error}
             </div>
           )}
 
@@ -70,14 +75,14 @@ export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors"
+              className="flex-1 bg-[#f7e9d7] hover:bg-[#e8d5c4] disabled:bg-gray-200 text-[#6b4423] font-semibold py-2 px-4 rounded-lg transition-colors"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
               disabled={loading || !password.trim()}
-              className="flex-1 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              className="flex-1 bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>

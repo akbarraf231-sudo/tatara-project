@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCart } from '@/lib/cartContext';
 import { PaymentModal } from './PaymentModal';
 
@@ -13,6 +13,11 @@ export function Cart() {
   const [error, setError] = useState(null);
 
   async function handleCheckout() {
+    if (!customerName.trim()) {
+      setError('Mohon isi nama lo dulu');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
@@ -54,30 +59,37 @@ export function Cart() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md p-6 sticky top-24 h-fit border-2 border-amber-100">
-        <h2 className="text-2xl font-bold mb-4 text-amber-900">Your Cart</h2>
+      <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 h-fit border-2 border-[#e8d5c4]">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🛒</span>
+          <h2 className="text-2xl font-bold text-[#6b4423]">Keranjang</h2>
+        </div>
 
         {items.length === 0 ? (
-          <p className="text-amber-700 text-center py-8">Your cart is empty</p>
+          <div className="text-center py-8">
+            <p className="text-5xl mb-2">🥐</p>
+            <p className="text-[#8b6f47]">Keranjang kosong</p>
+            <p className="text-xs text-[#8b6f47] mt-1">Pilih produk dulu yuk!</p>
+          </div>
         ) : (
           <>
             <div className="space-y-3 mb-6 max-h-80 overflow-y-auto">
               {items.map((item) => (
                 <div
                   key={item.product_id}
-                  className="flex items-center justify-between border-b border-amber-100 pb-3"
+                  className="flex items-center justify-between border-b border-[#e8d5c4] pb-3 gap-2"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-amber-900 truncate">{item.name}</p>
-                    <p className="text-sm text-amber-700">
+                    <p className="font-semibold text-[#6b4423] truncate text-sm">{item.name}</p>
+                    <p className="text-xs text-[#c8794a] font-bold">
                       Rp {item.price.toLocaleString('id-ID')}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 mx-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => updateQty(item.product_id, item.qty - 1)}
-                      className="bg-amber-100 hover:bg-amber-200 w-7 h-7 rounded flex items-center justify-center transition-colors text-amber-900"
+                      className="bg-[#f7e9d7] hover:bg-[#e8d5c4] w-7 h-7 rounded flex items-center justify-center transition-colors text-[#6b4423] font-bold"
                     >
                       −
                     </button>
@@ -88,11 +100,11 @@ export function Cart() {
                       onChange={(e) =>
                         updateQty(item.product_id, parseInt(e.target.value) || 1)
                       }
-                      className="w-10 text-center border border-amber-200 rounded py-1 text-amber-900"
+                      className="w-10 text-center border border-[#e8d5c4] rounded py-1 text-[#6b4423] text-sm"
                     />
                     <button
                       onClick={() => updateQty(item.product_id, item.qty + 1)}
-                      className="bg-amber-100 hover:bg-amber-200 w-7 h-7 rounded flex items-center justify-center transition-colors text-amber-900"
+                      className="bg-[#f7e9d7] hover:bg-[#e8d5c4] w-7 h-7 rounded flex items-center justify-center transition-colors text-[#6b4423] font-bold"
                     >
                       +
                     </button>
@@ -100,7 +112,8 @@ export function Cart() {
 
                   <button
                     onClick={() => removeItem(item.product_id)}
-                    className="text-red-600 hover:text-red-800 font-semibold text-sm"
+                    className="text-red-600 hover:text-red-800 font-bold text-lg ml-1"
+                    title="Hapus"
                   >
                     ✕
                   </button>
@@ -108,35 +121,35 @@ export function Cart() {
               ))}
             </div>
 
-            <div className="border-t-2 border-amber-200 pt-4">
+            <div className="border-t-2 border-[#c8794a] pt-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-amber-900">Total:</span>
-                <span className="text-2xl font-bold text-amber-700">
+                <span className="text-lg font-semibold text-[#6b4423]">Total:</span>
+                <span className="text-2xl font-bold text-[#c8794a]">
                   Rp {total.toLocaleString('id-ID')}
                 </span>
               </div>
 
               <input
                 type="text"
-                placeholder="Your name"
+                placeholder="Nama lo..."
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border-2 border-amber-200 rounded-lg py-2 px-3 mb-3 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 mb-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
                 disabled={submitting}
               />
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-lg text-sm mb-3">
-                  {error}
+                  ⚠️ {error}
                 </div>
               )}
 
               <button
                 onClick={handleCheckout}
                 disabled={submitting || !customerName.trim()}
-                className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
               >
-                {submitting ? 'Processing...' : 'Proceed to Payment'}
+                {submitting ? '⏳ Memproses...' : '💳 Lanjut Bayar'}
               </button>
             </div>
           </>

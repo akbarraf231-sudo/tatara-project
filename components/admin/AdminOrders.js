@@ -9,6 +9,7 @@ export function AdminOrders() {
   const [error, setError] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
     fetchOrders();
@@ -69,12 +70,12 @@ export function AdminOrders() {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      completed: 'bg-blue-100 text-blue-800',
-      cancelled: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      confirmed: 'bg-green-100 text-green-800 border-green-300',
+      completed: 'bg-blue-100 text-blue-800 border-blue-300',
+      cancelled: 'bg-red-100 text-red-800 border-red-300',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
   const getStatusIcon = (status) => {
@@ -87,13 +88,34 @@ export function AdminOrders() {
     return icons[status] || '•';
   };
 
+  const filteredOrders = filterStatus === 'all'
+    ? orders
+    : orders.filter((o) => o.status === filterStatus);
+
   if (loading) {
-    return <div className="text-amber-700">Loading orders...</div>;
+    return <div className="text-[#6b4423]">Loading orders...</div>;
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-amber-900">Orders</h2>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-2xl font-bold text-[#6b4423]">📦 Orders ({orders.length})</h2>
+        <div className="flex gap-2 flex-wrap">
+          {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${
+                filterStatus === s
+                  ? 'bg-[#c8794a] text-white'
+                  : 'bg-[#f7e9d7] text-[#6b4423] hover:bg-[#e8d5c4]'
+              }`}
+            >
+              {s === 'all' ? 'All' : `${getStatusIcon(s)} ${s}`}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
@@ -101,40 +123,41 @@ export function AdminOrders() {
         </div>
       )}
 
-      {orders.length === 0 ? (
-        <p className="text-amber-700">No orders yet</p>
+      {filteredOrders.length === 0 ? (
+        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-12 text-center">
+          <p className="text-4xl mb-2">📭</p>
+          <p className="text-[#8b6f47]">Belum ada order {filterStatus !== 'all' && `dengan status "${filterStatus}"`}</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <div
               key={order.id}
-              className="bg-white rounded-lg border-2 border-amber-200 overflow-hidden"
+              className="bg-white rounded-lg border-2 border-[#e8d5c4] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
               <button
                 onClick={() =>
                   setExpandedOrder(expandedOrder === order.id ? null : order.id)
                 }
-                className="w-full text-left p-4 hover:bg-amber-50 transition-colors flex items-center justify-between"
+                className="w-full text-left p-4 hover:bg-[#f7e9d7] transition-colors flex items-center justify-between gap-3"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{getStatusIcon(order.status)}</span>
-                    <div>
-                      <p className="font-bold text-amber-900">
-                        {order.customer_name} (#{order.id})
-                      </p>
-                      <p className="text-sm text-amber-700">
-                        {new Date(order.created_at).toLocaleString('id-ID')}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-3xl">{getStatusIcon(order.status)}</span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-[#6b4423] truncate">
+                      {order.customer_name}
+                    </p>
+                    <p className="text-xs text-[#8b6f47]">
+                      #{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleString('id-ID')}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-amber-900">
-                    Rp {order.total.toLocaleString('id-ID')}
+                  <p className="font-bold text-[#c8794a]">
+                    Rp {Number(order.total).toLocaleString('id-ID')}
                   </p>
                   <span
-                    className={`inline-block px-3 py-1 rounded text-xs font-semibold ${getStatusColor(
+                    className={`inline-block px-2 py-1 rounded text-xs font-semibold border ${getStatusColor(
                       order.status
                     )}`}
                   >
@@ -144,21 +167,21 @@ export function AdminOrders() {
               </button>
 
               {expandedOrder === order.id && (
-                <div className="bg-amber-50 border-t-2 border-amber-200 p-4 space-y-4">
+                <div className="bg-[#f5ebe0] border-t-2 border-[#e8d5c4] p-4 space-y-4">
                   {/* Order Items */}
                   <div>
-                    <h4 className="font-bold text-amber-900 mb-2">Items:</h4>
-                    <div className="space-y-2">
+                    <h4 className="font-bold text-[#6b4423] mb-2">📋 Items:</h4>
+                    <div className="space-y-2 bg-white p-3 rounded-lg border border-[#e8d5c4]">
                       {order.order_items?.map((item) => (
                         <div
                           key={item.id}
-                          className="flex justify-between text-sm text-amber-900"
+                          className="flex justify-between text-sm text-[#6b4423]"
                         >
                           <span>
-                            {item.products?.name || 'Product'} x{item.qty}
+                            {item.products?.name || 'Product'} <span className="text-[#8b6f47]">x{item.qty}</span>
                           </span>
-                          <span>
-                            Rp {(item.price * item.qty).toLocaleString('id-ID')}
+                          <span className="font-semibold">
+                            Rp {(Number(item.price) * item.qty).toLocaleString('id-ID')}
                           </span>
                         </div>
                       ))}
@@ -168,27 +191,40 @@ export function AdminOrders() {
                   {/* Status Update */}
                   {order.status !== 'completed' && order.status !== 'cancelled' && (
                     <div>
-                      <h4 className="font-bold text-amber-900 mb-2">Update Status:</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {['confirmed', 'completed', 'cancelled'].map((status) => (
+                      <h4 className="font-bold text-[#6b4423] mb-2">Update Status:</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {order.status === 'pending' && (
                           <button
-                            key={status}
-                            onClick={() => updateOrderStatus(order.id, status)}
+                            onClick={() => updateOrderStatus(order.id, 'confirmed')}
                             disabled={updatingStatus === order.id}
-                            className="px-3 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded font-semibold text-sm transition-colors"
+                            className="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded font-semibold text-sm transition-colors"
                           >
-                            {status === 'confirmed' && '✅ Confirm'}
-                            {status === 'completed' && '📦 Complete'}
-                            {status === 'cancelled' && '❌ Cancel'}
+                            ✅ Confirm
                           </button>
-                        ))}
+                        )}
+                        {(order.status === 'pending' || order.status === 'confirmed') && (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'completed')}
+                            disabled={updatingStatus === order.id}
+                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded font-semibold text-sm transition-colors"
+                          >
+                            📦 Complete
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                          disabled={updatingStatus === order.id}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded font-semibold text-sm transition-colors"
+                        >
+                          ❌ Cancel
+                        </button>
                       </div>
                     </div>
                   )}
 
-                  {order.expires_at && (
-                    <p className="text-xs text-amber-700">
-                      Expires: {new Date(order.expires_at).toLocaleString('id-ID')}
+                  {order.expires_at && order.status === 'pending' && (
+                    <p className="text-xs text-[#8b6f47]">
+                      ⏰ Expires: {new Date(order.expires_at).toLocaleString('id-ID')}
                     </p>
                   )}
                 </div>

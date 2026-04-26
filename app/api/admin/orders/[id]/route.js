@@ -16,8 +16,8 @@ export async function PATCH(request, { params }) {
   }
 
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id } = params;
     const { status } = body;
 
     const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
     const { data, error } = await supabaseServer
       .from('orders')
       .update({ status, updated_at: new Date() })
-      .eq('id', parseInt(id))
+      .eq('id', id)
       .select()
       .single();
 

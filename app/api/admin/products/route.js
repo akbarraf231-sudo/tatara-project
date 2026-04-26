@@ -17,7 +17,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { name, price, stock, is_active } = body;
+    const { name, price, stock, is_active, image_url } = body;
 
     if (!name || price == null || stock == null) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function POST(request) {
           name,
           price: parseFloat(price),
           stock: parseInt(stock),
+          image_url: image_url || null,
           is_active: is_active ?? true,
         },
       ])

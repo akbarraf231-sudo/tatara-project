@@ -41,9 +41,13 @@ create table if not exists settings (
   id uuid primary key default gen_random_uuid(),
   whatsapp_number text,
   location_link text,
+  qris_image_url text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
+
+alter table settings add column if not exists qris_image_url text;
+alter table products add column if not exists image_url text;
 
 create index if not exists idx_orders_status on orders(status);
 create index if not exists idx_orders_expires_at on orders(expires_at);

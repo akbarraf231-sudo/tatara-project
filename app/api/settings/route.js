@@ -18,6 +18,7 @@ export async function GET() {
       data: data || {
         whatsapp_number: '',
         location_link: '',
+        qris_image_url: '',
       },
     });
   } catch (err) {
@@ -31,7 +32,7 @@ export async function GET() {
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { whatsapp_number, location_link } = body;
+    const { whatsapp_number, location_link, qris_image_url } = body;
 
     if (!process.env.ADMIN_PASSWORD || request.headers.get('x-admin-token') !== Buffer.from(process.env.ADMIN_PASSWORD).toString('base64')) {
       return NextResponse.json(
@@ -46,18 +47,20 @@ export async function PUT(request) {
       .limit(1)
       .single();
 
+    const payload = { whatsapp_number, location_link, qris_image_url, updated_at: new Date() };
+
     let result;
     if (existing) {
       result = await supabaseServer
         .from('settings')
-        .update({ whatsapp_number, location_link, updated_at: new Date() })
+        .update(payload)
         .eq('id', existing.id)
         .select()
         .single();
     } else {
       result = await supabaseServer
         .from('settings')
-        .insert([{ whatsapp_number, location_link }])
+        .insert([payload])
         .select()
         .single();
     }

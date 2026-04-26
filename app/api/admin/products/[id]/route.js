@@ -16,20 +16,21 @@ export async function PATCH(request, { params }) {
   }
 
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id } = params;
-    const { name, price, stock, is_active } = body;
+    const { name, price, stock, is_active, image_url } = body;
 
-    const updateData = {};
+    const updateData = { updated_at: new Date() };
     if (name !== undefined) updateData.name = name;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (stock !== undefined) updateData.stock = parseInt(stock);
     if (is_active !== undefined) updateData.is_active = is_active;
+    if (image_url !== undefined) updateData.image_url = image_url || null;
 
     const { data, error } = await supabaseServer
       .from('products')
       .update(updateData)
-      .eq('id', parseInt(id))
+      .eq('id', id)
       .select()
       .single();
 
@@ -53,12 +54,12 @@ export async function DELETE(request, { params }) {
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const { error } = await supabaseServer
       .from('products')
       .delete()
-      .eq('id', parseInt(id));
+      .eq('id', id);
 
     if (error) throw error;
 
