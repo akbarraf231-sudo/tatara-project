@@ -15,10 +15,18 @@ export function SplashScreen() {
       return;
     }
 
-    fetch('/api/settings')
-      .then((r) => r.json())
-      .then((d) => setLogoUrl(d.data?.site_logo_url || ''))
-      .catch(() => {});
+    try {
+      fetch('/api/settings')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.data?.site_logo_url) {
+            setLogoUrl(d.data.site_logo_url);
+          }
+        })
+        .catch(() => {});
+    } catch (_) {
+      // Silently fail, use emoji default
+    }
 
     const fadeTimer = setTimeout(() => setFadeOut(true), 1800);
     const hideTimer = setTimeout(() => {

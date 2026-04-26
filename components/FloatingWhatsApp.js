@@ -6,13 +6,19 @@ export function FloatingWhatsApp() {
   const [waNumber, setWaNumber] = useState('');
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((r) => r.json())
-      .then((d) => {
-        const n = d.data?.cs_whatsapp_number || d.data?.whatsapp_number || '';
-        setWaNumber(n);
-      })
-      .catch(() => {});
+    try {
+      fetch('/api/settings')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.data) {
+            const n = d.data.cs_whatsapp_number || d.data.whatsapp_number || '';
+            setWaNumber(n);
+          }
+        })
+        .catch(() => {});
+    } catch (_) {
+      // Silently fail
+    }
   }, []);
 
   if (!waNumber) return null;

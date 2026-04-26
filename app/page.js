@@ -53,34 +53,42 @@ export default function Home() {
         if (prodError) throw prodError;
         setProducts(prods || []);
 
-        const { data: settings } = await supabase
-          .from('settings')
-          .select('location_link')
-          .limit(1)
-          .maybeSingle();
-        if (settings?.location_link) setLocationLink(settings.location_link);
+        try {
+          const { data: settings } = await supabase
+            .from('settings')
+            .select('location_link')
+            .limit(1)
+            .maybeSingle();
+          if (settings?.location_link) setLocationLink(settings.location_link);
+        } catch (_) {
+          // Settings fetch failed, continue with defaults
+        }
 
-        const lc = await fetch('/api/landing').then((r) => r.json()).catch(() => null);
-        if (lc?.success && lc.data) {
-          const d = lc.data;
-          setContent((prev) => ({
-            hero_title: d.hero_title || prev.hero_title,
-            hero_subtitle: d.hero_subtitle || prev.hero_subtitle,
-            hero_image_url: d.hero_image_url || prev.hero_image_url,
-            about_title: d.about_title || prev.about_title,
-            about_text: d.about_text || prev.about_text,
-            about_image_1: d.about_image_1 || prev.about_image_1,
-            about_image_2: d.about_image_2 || prev.about_image_2,
-            about_image_3: d.about_image_3 || prev.about_image_3,
-            about_image_4: d.about_image_4 || prev.about_image_4,
-            cakes_title: d.cakes_title || prev.cakes_title,
-            cakes_subtitle: d.cakes_subtitle || prev.cakes_subtitle,
-            order_title: d.order_title || prev.order_title,
-            contact_title: d.contact_title || prev.contact_title,
-            contact_text: d.contact_text || prev.contact_text,
-            testimonials: Array.isArray(d.testimonials) && d.testimonials.length ? d.testimonials : prev.testimonials,
-            ingredients: Array.isArray(d.ingredients) && d.ingredients.length ? d.ingredients : prev.ingredients,
-          }));
+        try {
+          const lc = await fetch('/api/landing').then((r) => r.json()).catch(() => null);
+          if (lc?.success && lc.data) {
+            const d = lc.data;
+            setContent((prev) => ({
+              hero_title: d.hero_title || prev.hero_title,
+              hero_subtitle: d.hero_subtitle || prev.hero_subtitle,
+              hero_image_url: d.hero_image_url || prev.hero_image_url,
+              about_title: d.about_title || prev.about_title,
+              about_text: d.about_text || prev.about_text,
+              about_image_1: d.about_image_1 || prev.about_image_1,
+              about_image_2: d.about_image_2 || prev.about_image_2,
+              about_image_3: d.about_image_3 || prev.about_image_3,
+              about_image_4: d.about_image_4 || prev.about_image_4,
+              cakes_title: d.cakes_title || prev.cakes_title,
+              cakes_subtitle: d.cakes_subtitle || prev.cakes_subtitle,
+              order_title: d.order_title || prev.order_title,
+              contact_title: d.contact_title || prev.contact_title,
+              contact_text: d.contact_text || prev.contact_text,
+              testimonials: Array.isArray(d.testimonials) && d.testimonials.length ? d.testimonials : prev.testimonials,
+              ingredients: Array.isArray(d.ingredients) && d.ingredients.length ? d.ingredients : prev.ingredients,
+            }));
+          }
+        } catch (_) {
+          // Landing content fetch failed, continue with defaults
         }
       } catch (err) {
         setError(err.message);
