@@ -93,13 +93,13 @@ export function AdminOrders() {
     : orders.filter((o) => o.status === filterStatus);
 
   if (loading) {
-    return <div className="text-[#6b4423]">Loading orders...</div>;
+    return <div className="text-[#5a1f2a]">Loading orders...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-[#6b4423]">📦 Orders ({orders.length})</h2>
+        <h2 className="text-2xl font-bold text-[#5a1f2a]">📦 Orders ({orders.length})</h2>
         <div className="flex gap-2 flex-wrap">
           {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
             <button
@@ -107,8 +107,8 @@ export function AdminOrders() {
               onClick={() => setFilterStatus(s)}
               className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${
                 filterStatus === s
-                  ? 'bg-[#c8794a] text-white'
-                  : 'bg-[#f7e9d7] text-[#6b4423] hover:bg-[#e8d5c4]'
+                  ? 'bg-[#5a1f2a] text-white'
+                  : 'bg-[#fce8e2] text-[#5a1f2a] hover:bg-[#e3b9b9]'
               }`}
             >
               {s === 'all' ? 'All' : `${getStatusIcon(s)} ${s}`}
@@ -124,36 +124,36 @@ export function AdminOrders() {
       )}
 
       {filteredOrders.length === 0 ? (
-        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-12 text-center">
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-12 text-center">
           <p className="text-4xl mb-2">📭</p>
-          <p className="text-[#8b6f47]">Belum ada order {filterStatus !== 'all' && `dengan status "${filterStatus}"`}</p>
+          <p className="text-[#722f37]">Belum ada order {filterStatus !== 'all' && `dengan status "${filterStatus}"`}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredOrders.map((order) => (
             <div
               key={order.id}
-              className="bg-white rounded-lg border-2 border-[#e8d5c4] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-lg border-2 border-[#e3b9b9] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
               <button
                 onClick={() =>
                   setExpandedOrder(expandedOrder === order.id ? null : order.id)
                 }
-                className="w-full text-left p-4 hover:bg-[#f7e9d7] transition-colors flex items-center justify-between gap-3"
+                className="w-full text-left p-4 hover:bg-[#fce8e2] transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <span className="text-3xl">{getStatusIcon(order.status)}</span>
                   <div className="min-w-0">
-                    <p className="font-bold text-[#6b4423] truncate">
+                    <p className="font-bold text-[#5a1f2a] truncate">
                       {order.customer_name}
                     </p>
-                    <p className="text-xs text-[#8b6f47]">
+                    <p className="text-xs text-[#722f37]">
                       #{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleString('id-ID')}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-[#c8794a]">
+                  <p className="font-bold text-[#5a1f2a]">
                     Rp {Number(order.total).toLocaleString('id-ID')}
                   </p>
                   <span
@@ -167,18 +167,18 @@ export function AdminOrders() {
               </button>
 
               {expandedOrder === order.id && (
-                <div className="bg-[#f5ebe0] border-t-2 border-[#e8d5c4] p-4 space-y-4">
+                <div className="bg-[#fce8e2] border-t-2 border-[#e3b9b9] p-4 space-y-4">
                   {/* Order Items */}
                   <div>
-                    <h4 className="font-bold text-[#6b4423] mb-2">📋 Items:</h4>
-                    <div className="space-y-2 bg-white p-3 rounded-lg border border-[#e8d5c4]">
+                    <h4 className="font-bold text-[#5a1f2a] mb-2">📋 Items:</h4>
+                    <div className="space-y-2 bg-white p-3 rounded-lg border border-[#e3b9b9]">
                       {order.order_items?.map((item) => (
                         <div
                           key={item.id}
-                          className="flex justify-between text-sm text-[#6b4423]"
+                          className="flex justify-between text-sm text-[#5a1f2a]"
                         >
                           <span>
-                            {item.products?.name || 'Product'} <span className="text-[#8b6f47]">x{item.qty}</span>
+                            {item.products?.name || 'Product'} <span className="text-[#722f37]">x{item.qty}</span>
                           </span>
                           <span className="font-semibold">
                             Rp {(Number(item.price) * item.qty).toLocaleString('id-ID')}
@@ -191,7 +191,7 @@ export function AdminOrders() {
                   {/* Status Update */}
                   {order.status !== 'completed' && order.status !== 'cancelled' && (
                     <div>
-                      <h4 className="font-bold text-[#6b4423] mb-2">Update Status:</h4>
+                      <h4 className="font-bold text-[#5a1f2a] mb-2">Update Status:</h4>
                       <div className="grid grid-cols-3 gap-2">
                         {order.status === 'pending' && (
                           <button
@@ -223,7 +223,7 @@ export function AdminOrders() {
                   )}
 
                   {order.expires_at && order.status === 'pending' && (
-                    <p className="text-xs text-[#8b6f47]">
+                    <p className="text-xs text-[#722f37]">
                       ⏰ Expires: {new Date(order.expires_at).toLocaleString('id-ID')}
                     </p>
                   )}

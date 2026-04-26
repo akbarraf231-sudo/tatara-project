@@ -91,7 +91,7 @@ export function ImageUpload({ value, onChange, label }) {
   return (
     <div>
       {label && (
-        <label className="block text-sm font-semibold text-[#6b4423] mb-2">
+        <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">
           {label}
         </label>
       )}
@@ -105,8 +105,8 @@ export function ImageUpload({ value, onChange, label }) {
         onClick={() => !uploading && inputRef.current?.click()}
         className={`relative border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all focus:outline-none ${
           dragActive
-            ? 'border-[#c8794a] bg-[#fff5e6]'
-            : 'border-[#e8d5c4] hover:border-[#c8794a] hover:bg-[#f7e9d7]'
+            ? 'border-[#5a1f2a] bg-[#fce8e2]'
+            : 'border-[#e3b9b9] hover:border-[#5a1f2a] hover:bg-[#fce8e2]'
         }`}
       >
         {value ? (
@@ -119,7 +119,7 @@ export function ImageUpload({ value, onChange, label }) {
                 e.target.style.display = 'none';
               }}
             />
-            <p className="text-xs text-[#8b6f47]">
+            <p className="text-xs text-[#722f37]">
               Klik untuk ganti, drag image baru, atau paste (Ctrl+V)
             </p>
             <button
@@ -136,16 +136,16 @@ export function ImageUpload({ value, onChange, label }) {
         ) : (
           <div className="space-y-2 py-4">
             <p className="text-4xl">📷</p>
-            <p className="text-[#6b4423] font-semibold">
+            <p className="text-[#5a1f2a] font-semibold">
               {uploading ? 'Mengupload...' : 'Klik untuk pilih file'}
             </p>
             {!uploading && (
               <>
-                <p className="text-sm text-[#8b6f47]">Atau drag & drop di sini</p>
-                <p className="text-xs text-[#8b6f47]">
+                <p className="text-sm text-[#722f37]">Atau drag & drop di sini</p>
+                <p className="text-xs text-[#722f37]">
                   Atau klik kotak ini lalu paste (Ctrl+V)
                 </p>
-                <p className="text-xs text-[#8b6f47]">Max 5MB · JPG/PNG/WebP/GIF</p>
+                <p className="text-xs text-[#722f37]">Max 5MB · JPG/PNG/WebP/GIF</p>
               </>
             )}
           </div>
@@ -162,7 +162,7 @@ export function ImageUpload({ value, onChange, label }) {
       </div>
 
       {uploading && (
-        <p className="text-sm text-[#c8794a] mt-2 flex items-center gap-1">
+        <p className="text-sm text-[#5a1f2a] mt-2 flex items-center gap-1">
           <span className="animate-spin">⏳</span> Uploading...
         </p>
       )}

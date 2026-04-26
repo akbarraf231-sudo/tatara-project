@@ -27,39 +27,56 @@ export function Navbar() {
 
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
 
+  function scrollTo(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
     <>
-      <nav className="bg-white border-b-4 border-[#6b4423] sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <nav className="bg-[#fce8e2] sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="text-2xl">🥐</div>
-            <h1 className="text-2xl font-bold text-[#6b4423]">BAKERY</h1>
-          </div>
+          <button onClick={() => scrollTo('home')} className="flex items-center gap-2 group">
+            <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center text-2xl border-2 border-[#e3b9b9] group-hover:scale-105 transition-transform">
+              🍰
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-base font-bold text-[#5a1f2a] leading-tight">Sinar Jaya</p>
+              <p className="text-xs text-[#722f37] tracking-widest">BAKERY</p>
+            </div>
+          </button>
 
           {/* Nav Links (Desktop) */}
-          <div className="hidden md:flex gap-6 text-[#6b4423] font-semibold">
-            <a href="#home" className="hover:text-[#c8794a] transition-colors">HOME</a>
-            <a href="#menu" className="hover:text-[#c8794a] transition-colors">MENU</a>
-            <a href="#about" className="hover:text-[#c8794a] transition-colors">ABOUT</a>
-            <a href="#contact" className="hover:text-[#c8794a] transition-colors">CONTACT</a>
+          <div className="hidden md:flex gap-8 text-[#5a1f2a] font-medium">
+            <button onClick={() => scrollTo('home')} className="hover:text-[#c89292] hover:underline underline-offset-4 transition-colors">
+              Home
+            </button>
+            <button onClick={() => scrollTo('gallery')} className="hover:text-[#c89292] hover:underline underline-offset-4 transition-colors">
+              Cakes
+            </button>
+            <button onClick={() => scrollTo('cart')} className="hover:text-[#c89292] hover:underline underline-offset-4 transition-colors">
+              Order
+            </button>
+            <button onClick={() => scrollTo('about')} className="hover:text-[#c89292] hover:underline underline-offset-4 transition-colors">
+              About
+            </button>
+            <button onClick={() => scrollTo('contact')} className="hover:text-[#c89292] hover:underline underline-offset-4 transition-colors">
+              Contact
+            </button>
           </div>
 
-          {/* Right Side - Icons & Buttons */}
-          <div className="flex items-center gap-4">
+          {/* Right Icons */}
+          <div className="flex items-center gap-3">
             {isAdmin && (
-              <div className="text-sm text-[#6b4423] hidden md:flex items-center gap-2">
-                <span className="font-semibold">Admin</span>
-                <button
-                  onClick={handleAdminLogout}
-                  className="text-xs bg-red-200 hover:bg-red-300 text-red-800 px-2 py-1 rounded"
-                >
-                  Logout
-                </button>
-              </div>
+              <button
+                onClick={handleAdminLogout}
+                className="hidden md:block text-xs bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold"
+              >
+                Logout
+              </button>
             )}
 
-            {/* Settings Icon */}
+            {/* Settings/Admin Icon */}
             <button
               onClick={() => {
                 if (isAdmin) {
@@ -68,11 +85,11 @@ export function Navbar() {
                   setIsAdminModalOpen(true);
                 }
               }}
-              className="p-2 hover:bg-[#f5ebe0] rounded-lg transition-colors"
+              className="w-10 h-10 rounded-full bg-white hover:bg-[#e3b9b9] transition-colors flex items-center justify-center shadow-sm"
               title="Admin"
             >
               <svg
-                className="w-6 h-6 text-[#6b4423]"
+                className="w-5 h-5 text-[#5a1f2a]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -81,30 +98,19 @@ export function Navbar() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
             </button>
 
             {/* Cart Icon */}
             <button
-              onClick={() => {
-                const cartElement = document.querySelector('[data-cart-toggle]');
-                if (cartElement) {
-                  cartElement.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="p-2 hover:bg-[#f5ebe0] rounded-lg transition-colors relative"
+              onClick={() => scrollTo('cart')}
+              className="w-10 h-10 rounded-full bg-white hover:bg-[#e3b9b9] transition-colors flex items-center justify-center shadow-sm relative"
               title="Cart"
             >
               <svg
-                className="w-6 h-6 text-[#6b4423]"
+                className="w-5 h-5 text-[#5a1f2a]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -117,7 +123,7 @@ export function Navbar() {
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#c8794a] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#5a1f2a] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}

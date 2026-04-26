@@ -145,16 +145,16 @@ export function AdminProducts() {
   }
 
   if (loading) {
-    return <div className="text-[#6b4423]">Loading products...</div>;
+    return <div className="text-[#5a1f2a]">Loading products...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-[#6b4423]">🥐 Products ({products.length})</h2>
+        <h2 className="text-2xl font-bold text-[#5a1f2a]">🥐 Products ({products.length})</h2>
         <button
           onClick={handleNew}
-          className="bg-[#c8794a] hover:bg-[#b6663a] text-white font-semibold py-2 px-6 rounded-lg transition-colors shadow-sm"
+          className="bg-[#5a1f2a] hover:bg-[#722f37] text-white font-semibold py-2 px-6 rounded-lg transition-colors shadow-sm"
         >
           + Add Product
         </button>
@@ -168,14 +168,14 @@ export function AdminProducts() {
 
       {/* Product Form */}
       {showForm && (
-        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 space-y-4 shadow-md">
-          <h3 className="text-xl font-bold text-[#6b4423]">
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 space-y-4 shadow-md">
+          <h3 className="text-xl font-bold text-[#5a1f2a]">
             {editingId ? '✏️ Edit Product' : '➕ New Product'}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[#6b4423] mb-1">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
                 Name *
               </label>
               <input
@@ -185,12 +185,12 @@ export function AdminProducts() {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. Croissant"
-                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#6b4423] mb-1">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
                 Price (Rp) *
               </label>
               <input
@@ -200,12 +200,12 @@ export function AdminProducts() {
                   setFormData({ ...formData, price: e.target.value })
                 }
                 placeholder="25000"
-                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#6b4423] mb-1">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
                 Stock *
               </label>
               <input
@@ -215,7 +215,7 @@ export function AdminProducts() {
                   setFormData({ ...formData, stock: e.target.value })
                 }
                 placeholder="50"
-                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
             </div>
 
@@ -227,9 +227,9 @@ export function AdminProducts() {
                   onChange={(e) =>
                     setFormData({ ...formData, is_active: e.target.checked })
                   }
-                  className="w-5 h-5 accent-[#c8794a]"
+                  className="w-5 h-5 accent-[#5a1f2a]"
                 />
-                <span className="text-sm font-semibold text-[#6b4423]">
+                <span className="text-sm font-semibold text-[#5a1f2a]">
                   Active (display di website)
                 </span>
               </label>
@@ -260,14 +260,14 @@ export function AdminProducts() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+              className="bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
               {saving ? '⏳ Menyimpan...' : '💾 Save'}
             </button>
             <button
               onClick={() => { setShowForm(false); setFormMessage(null); }}
               disabled={saving}
-              className="bg-[#f7e9d7] hover:bg-[#e8d5c4] text-[#6b4423] font-semibold py-2 px-6 rounded-lg transition-colors"
+              className="bg-[#fce8e2] hover:bg-[#e3b9b9] text-[#5a1f2a] font-semibold py-2 px-6 rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -277,28 +277,28 @@ export function AdminProducts() {
 
       {/* Products List */}
       {products.length === 0 ? (
-        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-12 text-center">
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-12 text-center">
           <p className="text-4xl mb-2">🥖</p>
-          <p className="text-[#8b6f47]">Belum ada produk. Klik "Add Product" untuk mulai!</p>
+          <p className="text-[#722f37]">Belum ada produk. Klik "Add Product" untuk mulai!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
             <div
               key={product.id}
-              className="bg-white border-2 border-[#e8d5c4] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white border-2 border-[#e3b9b9] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
               {product.image_url && (
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-32 object-cover bg-[#f7e9d7]"
+                  className="w-full h-32 object-cover bg-[#fce8e2]"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               )}
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3 gap-2">
-                  <h3 className="font-bold text-[#6b4423] flex-1">{product.name}</h3>
+                  <h3 className="font-bold text-[#5a1f2a] flex-1">{product.name}</h3>
                   <span
                     className={`px-2 py-1 rounded text-xs font-semibold ${
                       product.is_active
@@ -310,10 +310,10 @@ export function AdminProducts() {
                   </span>
                 </div>
 
-                <div className="space-y-1 mb-4 text-sm text-[#6b4423]">
+                <div className="space-y-1 mb-4 text-sm text-[#5a1f2a]">
                   <p>
                     <span className="font-semibold">Price:</span>{' '}
-                    <span className="text-[#c8794a] font-bold">
+                    <span className="text-[#5a1f2a] font-bold">
                       Rp {Number(product.price).toLocaleString('id-ID')}
                     </span>
                   </p>

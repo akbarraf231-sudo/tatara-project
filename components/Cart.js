@@ -59,52 +59,39 @@ export function Cart() {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 h-fit border-2 border-[#e8d5c4]">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🛒</span>
-          <h2 className="text-2xl font-bold text-[#6b4423]">Keranjang</h2>
-        </div>
-
+      <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-[#e3b9b9]">
         {items.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-5xl mb-2">🥐</p>
-            <p className="text-[#8b6f47]">Keranjang kosong</p>
-            <p className="text-xs text-[#8b6f47] mt-1">Pilih produk dulu yuk!</p>
+          <div className="text-center py-12">
+            <p className="text-6xl mb-3">🛒</p>
+            <p className="text-[#5a1f2a] text-xl font-semibold">Keranjang Kosong</p>
+            <p className="text-[#722f37] text-sm mt-1">Pilih cake favorit lo dari Gallery!</p>
           </div>
         ) : (
           <>
-            <div className="space-y-3 mb-6 max-h-80 overflow-y-auto">
+            <div className="space-y-3 mb-6 max-h-96 overflow-y-auto pr-2">
               {items.map((item) => (
                 <div
                   key={item.product_id}
-                  className="flex items-center justify-between border-b border-[#e8d5c4] pb-3 gap-2"
+                  className="flex items-center justify-between bg-[#fce8e2] rounded-2xl p-3 gap-3"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#6b4423] truncate text-sm">{item.name}</p>
-                    <p className="text-xs text-[#c8794a] font-bold">
+                    <p className="font-semibold text-[#5a1f2a] truncate">{item.name}</p>
+                    <p className="text-xs text-[#c89292] font-bold">
                       Rp {item.price.toLocaleString('id-ID')}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 bg-white rounded-full p-1 shadow-sm">
                     <button
                       onClick={() => updateQty(item.product_id, item.qty - 1)}
-                      className="bg-[#f7e9d7] hover:bg-[#e8d5c4] w-7 h-7 rounded flex items-center justify-center transition-colors text-[#6b4423] font-bold"
+                      className="w-7 h-7 rounded-full bg-[#e3b9b9] hover:bg-[#c89292] flex items-center justify-center text-white font-bold transition-colors"
                     >
                       −
                     </button>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.qty}
-                      onChange={(e) =>
-                        updateQty(item.product_id, parseInt(e.target.value) || 1)
-                      }
-                      className="w-10 text-center border border-[#e8d5c4] rounded py-1 text-[#6b4423] text-sm"
-                    />
+                    <span className="w-8 text-center font-bold text-[#5a1f2a]">{item.qty}</span>
                     <button
                       onClick={() => updateQty(item.product_id, item.qty + 1)}
-                      className="bg-[#f7e9d7] hover:bg-[#e8d5c4] w-7 h-7 rounded flex items-center justify-center transition-colors text-[#6b4423] font-bold"
+                      className="w-7 h-7 rounded-full bg-[#5a1f2a] hover:bg-[#722f37] flex items-center justify-center text-white font-bold transition-colors"
                     >
                       +
                     </button>
@@ -112,7 +99,7 @@ export function Cart() {
 
                   <button
                     onClick={() => removeItem(item.product_id)}
-                    className="text-red-600 hover:text-red-800 font-bold text-lg ml-1"
+                    className="text-[#5a1f2a] hover:text-red-600 font-bold text-xl"
                     title="Hapus"
                   >
                     ✕
@@ -121,10 +108,10 @@ export function Cart() {
               ))}
             </div>
 
-            <div className="border-t-2 border-[#c8794a] pt-4">
+            <div className="border-t-2 border-[#e3b9b9] pt-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-[#6b4423]">Total:</span>
-                <span className="text-2xl font-bold text-[#c8794a]">
+                <span className="text-lg font-semibold text-[#5a1f2a]">Total:</span>
+                <span className="text-3xl font-bold text-[#5a1f2a]">
                   Rp {total.toLocaleString('id-ID')}
                 </span>
               </div>
@@ -134,12 +121,12 @@ export function Cart() {
                 placeholder="Nama lo..."
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 mb-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 mb-3 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292]"
                 disabled={submitting}
               />
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-lg text-sm mb-3">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-2xl text-sm mb-3">
                   ⚠️ {error}
                 </div>
               )}
@@ -147,9 +134,9 @@ export function Cart() {
               <button
                 onClick={handleCheckout}
                 disabled={submitting || !customerName.trim()}
-                className="w-full bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
+                className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
               >
-                {submitting ? '⏳ Memproses...' : '💳 Lanjut Bayar'}
+                {submitting ? '⏳ Memproses...' : '💳 Checkout & Bayar'}
               </button>
             </div>
           </>

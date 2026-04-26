@@ -104,12 +104,12 @@ export function AdminDashboard() {
   }
 
   if (loading) {
-    return <div className="text-[#6b4423]">Loading dashboard...</div>;
+    return <div className="text-[#5a1f2a]">Loading dashboard...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#6b4423]">Dashboard</h2>
+      <h2 className="text-2xl font-bold text-[#5a1f2a]">Dashboard</h2>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
@@ -119,7 +119,7 @@ export function AdminDashboard() {
 
       {/* Income Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-[#c8794a] to-[#b6663a] text-white rounded-lg p-6 shadow-md">
+        <div className="bg-gradient-to-br from-[#5a1f2a] to-[#722f37] text-white rounded-lg p-6 shadow-md">
           <p className="text-sm opacity-90 mb-1">Total Income</p>
           <p className="text-3xl font-bold">
             Rp {stats.totalIncome.toLocaleString('id-ID')}
@@ -127,20 +127,20 @@ export function AdminDashboard() {
           <p className="text-xs opacity-75 mt-2">Confirmed + Completed</p>
         </div>
 
-        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 shadow-md">
-          <p className="text-sm text-[#8b6f47] mb-1">Today's Income</p>
-          <p className="text-3xl font-bold text-[#6b4423]">
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 shadow-md">
+          <p className="text-sm text-[#722f37] mb-1">Today's Income</p>
+          <p className="text-3xl font-bold text-[#5a1f2a]">
             Rp {stats.todayIncome.toLocaleString('id-ID')}
           </p>
-          <p className="text-xs text-[#8b6f47] mt-2">Since 00:00 today</p>
+          <p className="text-xs text-[#722f37] mt-2">Since 00:00 today</p>
         </div>
 
-        <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 shadow-md">
-          <p className="text-sm text-[#8b6f47] mb-1">This Month</p>
-          <p className="text-3xl font-bold text-[#6b4423]">
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 shadow-md">
+          <p className="text-sm text-[#722f37] mb-1">This Month</p>
+          <p className="text-3xl font-bold text-[#5a1f2a]">
             Rp {stats.monthIncome.toLocaleString('id-ID')}
           </p>
-          <p className="text-xs text-[#8b6f47] mt-2">Current month</p>
+          <p className="text-xs text-[#722f37] mt-2">Current month</p>
         </div>
       </div>
 
@@ -169,22 +169,22 @@ export function AdminDashboard() {
       </div>
 
       {/* Top Products */}
-      <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 shadow-md">
-        <h3 className="text-xl font-bold text-[#6b4423] mb-4">Top Products (Income)</h3>
+      <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 shadow-md">
+        <h3 className="text-xl font-bold text-[#5a1f2a] mb-4">Top Products (Income)</h3>
         {stats.topProducts.length === 0 ? (
-          <p className="text-[#8b6f47]">No sales yet</p>
+          <p className="text-[#722f37]">No sales yet</p>
         ) : (
           <div className="space-y-3">
             {stats.topProducts.map((p, idx) => (
               <div key={p.name} className="flex items-center gap-4">
-                <span className="text-2xl font-bold text-[#c8794a] w-8">
+                <span className="text-2xl font-bold text-[#5a1f2a] w-8">
                   #{idx + 1}
                 </span>
                 <div className="flex-1">
-                  <p className="font-semibold text-[#6b4423]">{p.name}</p>
-                  <p className="text-xs text-[#8b6f47]">{p.qty} sold</p>
+                  <p className="font-semibold text-[#5a1f2a]">{p.name}</p>
+                  <p className="text-xs text-[#722f37]">{p.qty} sold</p>
                 </div>
-                <p className="font-bold text-[#c8794a]">
+                <p className="font-bold text-[#5a1f2a]">
                   Rp {p.revenue.toLocaleString('id-ID')}
                 </p>
               </div>

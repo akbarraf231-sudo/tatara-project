@@ -64,17 +64,17 @@ export function AdminSettings() {
   }
 
   if (loading) {
-    return <div className="text-[#6b4423]">Loading settings...</div>;
+    return <div className="text-[#5a1f2a]">Loading settings...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#6b4423]">⚙️ Settings</h2>
+      <h2 className="text-2xl font-bold text-[#5a1f2a]">⚙️ Settings</h2>
 
-      <div className="bg-white border-2 border-[#e8d5c4] rounded-lg p-6 space-y-6 max-w-2xl shadow-md">
+      <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 space-y-6 max-w-2xl shadow-md">
         {/* WhatsApp Number */}
         <div>
-          <label htmlFor="wa-number" className="block text-sm font-bold text-[#6b4423] mb-2">
+          <label htmlFor="wa-number" className="block text-sm font-bold text-[#5a1f2a] mb-2">
             📱 WhatsApp Number
           </label>
           <input
@@ -85,16 +85,16 @@ export function AdminSettings() {
             onChange={(e) =>
               setSettings({ ...settings, whatsapp_number: e.target.value })
             }
-            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+            className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
           />
-          <p className="text-xs text-[#8b6f47] mt-1">
+          <p className="text-xs text-[#722f37] mt-1">
             Pakai kode negara (e.g. +62 untuk Indonesia)
           </p>
         </div>
 
         {/* Location Link */}
         <div>
-          <label htmlFor="location" className="block text-sm font-bold text-[#6b4423] mb-2">
+          <label htmlFor="location" className="block text-sm font-bold text-[#5a1f2a] mb-2">
             📍 Location Link (Google Maps)
           </label>
           <input
@@ -105,9 +105,9 @@ export function AdminSettings() {
             onChange={(e) =>
               setSettings({ ...settings, location_link: e.target.value })
             }
-            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+            className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
           />
-          <p className="text-xs text-[#8b6f47] mt-1">
+          <p className="text-xs text-[#722f37] mt-1">
             Paste link Google Maps lokasi toko
           </p>
         </div>
@@ -119,7 +119,7 @@ export function AdminSettings() {
             value={settings.qris_image_url}
             onChange={(url) => setSettings({ ...settings, qris_image_url: url })}
           />
-          <p className="text-xs text-[#8b6f47] mt-1">
+          <p className="text-xs text-[#722f37] mt-1">
             Drag & drop QRIS code, atau klik untuk pilih file
           </p>
         </div>
@@ -141,7 +141,7 @@ export function AdminSettings() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full"
+          className="bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full"
         >
           {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
         </button>
