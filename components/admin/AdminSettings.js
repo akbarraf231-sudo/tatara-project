@@ -10,6 +10,7 @@ export function AdminSettings() {
     qris_image_url: '',
     cs_whatsapp_number: '',
     special_lead_time_days: 3,
+    site_logo_url: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,6 +28,7 @@ export function AdminSettings() {
         qris_image_url: data.data?.qris_image_url || '',
         cs_whatsapp_number: data.data?.cs_whatsapp_number || '',
         special_lead_time_days: data.data?.special_lead_time_days ?? 3,
+        site_logo_url: data.data?.site_logo_url || '',
       });
     } catch (err) {
       console.error('Failed to fetch settings:', err);
@@ -110,6 +112,15 @@ export function AdminSettings() {
             onChange={(e) => setSettings({ ...settings, location_link: e.target.value })}
             className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
           />
+        </div>
+
+        <div>
+          <ImageUpload
+            label="🖼️ Logo Toko (Navbar)"
+            value={settings.site_logo_url}
+            onChange={(url) => setSettings({ ...settings, site_logo_url: url })}
+          />
+          <p className="text-xs text-[#722f37] mt-1">Logo bulat di navbar. Kosongkan untuk pakai emoji default 🍰</p>
         </div>
 
         <div>

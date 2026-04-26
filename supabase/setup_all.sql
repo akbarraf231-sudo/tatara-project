@@ -44,6 +44,7 @@ create table if not exists settings (
   qris_image_url text,
   cs_whatsapp_number text,
   special_lead_time_days integer default 3,
+  site_logo_url text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -52,6 +53,7 @@ create table if not exists settings (
 alter table settings add column if not exists qris_image_url text;
 alter table settings add column if not exists cs_whatsapp_number text;
 alter table settings add column if not exists special_lead_time_days integer default 3;
+alter table settings add column if not exists site_logo_url text;
 
 alter table products add column if not exists image_url text;
 alter table products add column if not exists product_type text not null default 'daily';

@@ -22,6 +22,7 @@ export async function GET() {
         qris_image_url: '',
         cs_whatsapp_number: '',
         special_lead_time_days: 3,
+        site_logo_url: '',
       },
     });
   } catch (err) {
@@ -44,6 +45,7 @@ export async function PUT(request) {
       qris_image_url,
       cs_whatsapp_number,
       special_lead_time_days,
+      site_logo_url,
     } = body;
 
     const { data: existing } = await supabaseServer
@@ -62,6 +64,7 @@ export async function PUT(request) {
     if (special_lead_time_days !== undefined) {
       payload.special_lead_time_days = parseInt(special_lead_time_days) || 3;
     }
+    if (site_logo_url !== undefined) payload.site_logo_url = site_logo_url;
 
     async function tryWrite(p) {
       if (existing) {
@@ -72,7 +75,7 @@ export async function PUT(request) {
 
     let result = await tryWrite(payload);
     // Handle missing-column errors gracefully
-    const droppable = ['qris_image_url', 'cs_whatsapp_number', 'special_lead_time_days'];
+    const droppable = ['qris_image_url', 'cs_whatsapp_number', 'special_lead_time_days', 'site_logo_url'];
     let attempt = 0;
     while (result.error && attempt < droppable.length) {
       const dropped = droppable.find((k) => new RegExp(k, 'i').test(result.error.message || ''));

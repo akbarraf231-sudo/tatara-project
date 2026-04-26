@@ -8,10 +8,15 @@ export function Navbar() {
   const { items } = useCart();
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     setIsAdmin(!!token);
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((d) => setLogoUrl(d.data?.site_logo_url || ''))
+      .catch(() => {});
   }, []);
 
   const handleAdminLogout = () => {
@@ -37,8 +42,12 @@ export function Navbar() {
       <nav className="bg-[#fce8e2] sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <button onClick={() => scrollTo('home')} className="flex items-center gap-2 group">
-            <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center text-2xl border-2 border-[#e3b9b9] group-hover:scale-105 transition-transform">
-              🍰
+            <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center text-2xl border-2 border-[#e3b9b9] group-hover:scale-105 transition-transform overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Sinar Jaya Bakery" className="w-full h-full object-cover" />
+              ) : (
+                '🍰'
+              )}
             </div>
             <div className="hidden sm:block">
               <p className="text-base font-bold text-[#5a1f2a] leading-tight">Sinar Jaya</p>
