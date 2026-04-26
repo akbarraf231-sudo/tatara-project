@@ -26,19 +26,30 @@ export async function POST(request) {
       );
     }
 
-    const { data, error } = await supabaseServer
+    const insertData = {
+      name,
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      is_active: is_active ?? true,
+    };
+    if (image_url) insertData.image_url = image_url;
+
+    let { data, error } = await supabaseServer
       .from('products')
-      .insert([
-        {
-          name,
-          price: parseFloat(price),
-          stock: parseInt(stock),
-          image_url: image_url || null,
-          is_active: is_active ?? true,
-        },
-      ])
+      .insert([insertData])
       .select()
       .single();
+
+    if (error && /image_url/i.test(error.message || '')) {
+      delete insertData.image_url;
+      const retry = await supabaseServer
+        .from('products')
+        .insert([insertData])
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) throw error;
 

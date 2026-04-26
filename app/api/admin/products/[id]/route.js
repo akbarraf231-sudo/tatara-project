@@ -27,12 +27,24 @@ export async function PATCH(request, { params }) {
     if (is_active !== undefined) updateData.is_active = is_active;
     if (image_url !== undefined) updateData.image_url = image_url || null;
 
-    const { data, error } = await supabaseServer
+    let { data, error } = await supabaseServer
       .from('products')
       .update(updateData)
       .eq('id', id)
       .select()
       .single();
+
+    if (error && /image_url/i.test(error.message || '')) {
+      delete updateData.image_url;
+      const retry = await supabaseServer
+        .from('products')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) throw error;
 

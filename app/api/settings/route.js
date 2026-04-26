@@ -47,7 +47,12 @@ export async function PUT(request) {
       .limit(1)
       .single();
 
-    const payload = { whatsapp_number, location_link, qris_image_url, updated_at: new Date() };
+    const payload = {
+      whatsapp_number,
+      location_link,
+      updated_at: new Date(),
+    };
+    if (qris_image_url !== undefined) payload.qris_image_url = qris_image_url;
 
     let result;
     if (existing) {
@@ -63,6 +68,24 @@ export async function PUT(request) {
         .insert([payload])
         .select()
         .single();
+    }
+
+    if (result.error && /qris_image_url/i.test(result.error.message || '')) {
+      delete payload.qris_image_url;
+      if (existing) {
+        result = await supabaseServer
+          .from('settings')
+          .update(payload)
+          .eq('id', existing.id)
+          .select()
+          .single();
+      } else {
+        result = await supabaseServer
+          .from('settings')
+          .insert([payload])
+          .select()
+          .single();
+      }
     }
 
     if (result.error) {

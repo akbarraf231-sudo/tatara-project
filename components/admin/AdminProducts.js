@@ -10,6 +10,8 @@ export function AdminProducts() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [formMessage, setFormMessage] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -41,6 +43,7 @@ export function AdminProducts() {
 
   function handleEdit(product) {
     setEditingId(product.id);
+    setFormMessage(null);
     setFormData({
       name: product.name,
       price: product.price.toString(),
@@ -53,6 +56,7 @@ export function AdminProducts() {
 
   function handleNew() {
     setEditingId(null);
+    setFormMessage(null);
     setFormData({
       name: '',
       price: '',
@@ -65,9 +69,12 @@ export function AdminProducts() {
 
   async function handleSave() {
     if (!formData.name.trim() || !formData.price || !formData.stock) {
-      alert('Mohon isi semua field');
+      setFormMessage({ type: 'error', text: 'Mohon isi Name, Price, dan Stock' });
       return;
     }
+
+    setSaving(true);
+    setFormMessage(null);
 
     try {
       const token = localStorage.getItem('adminToken');
@@ -79,36 +86,39 @@ export function AdminProducts() {
         is_active: formData.is_active,
       };
 
-      let res;
-      if (editingId) {
-        res = await fetch(`/api/admin/products/${editingId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-token': token,
-          },
-          body: JSON.stringify(data),
-        });
-      } else {
-        res = await fetch('/api/admin/products', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-token': token,
-          },
-          body: JSON.stringify(data),
-        });
-      }
+      const url = editingId
+        ? `/api/admin/products/${editingId}`
+        : '/api/admin/products';
+      const method = editingId ? 'PATCH' : 'POST';
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to save product');
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': token,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Gagal menyimpan produk');
       }
 
       await fetchProducts();
-      setShowForm(false);
+      setFormMessage({
+        type: 'success',
+        text: editingId ? '✅ Produk berhasil di-update!' : '✅ Produk berhasil ditambahkan!',
+      });
+      setTimeout(() => {
+        setShowForm(false);
+        setFormMessage(null);
+      }, 1200);
     } catch (err) {
-      alert(err.message);
+      setFormMessage({ type: 'error', text: err.message });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -234,15 +244,29 @@ export function AdminProducts() {
             </div>
           </div>
 
+          {formMessage && (
+            <div
+              className={`p-3 rounded-lg ${
+                formMessage.type === 'success'
+                  ? 'bg-green-50 text-green-800 border border-green-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}
+            >
+              {formMessage.text}
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               onClick={handleSave}
-              className="bg-[#c8794a] hover:bg-[#b6663a] text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+              disabled={saving}
+              className="bg-[#c8794a] hover:bg-[#b6663a] disabled:bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
-              💾 Save
+              {saving ? '⏳ Menyimpan...' : '💾 Save'}
             </button>
             <button
-              onClick={() => setShowForm(false)}
+              onClick={() => { setShowForm(false); setFormMessage(null); }}
+              disabled={saving}
               className="bg-[#f7e9d7] hover:bg-[#e8d5c4] text-[#6b4423] font-semibold py-2 px-6 rounded-lg transition-colors"
             >
               Cancel
