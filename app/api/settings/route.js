@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { isAdminAuthorized } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
@@ -19,6 +20,8 @@ export async function GET() {
         whatsapp_number: '',
         location_link: '',
         qris_image_url: '',
+        cs_whatsapp_number: '',
+        special_lead_time_days: 3,
       },
     });
   } catch (err) {
@@ -30,16 +33,18 @@ export async function GET() {
 }
 
 export async function PUT(request) {
+  if (!isAdminAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await request.json();
-    const { whatsapp_number, location_link, qris_image_url } = body;
-
-    if (!process.env.ADMIN_PASSWORD || request.headers.get('x-admin-token') !== Buffer.from(process.env.ADMIN_PASSWORD).toString('base64')) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const {
+      whatsapp_number,
+      location_link,
+      qris_image_url,
+      cs_whatsapp_number,
+      special_lead_time_days,
+    } = body;
 
     const { data: existing } = await supabaseServer
       .from('settings')
@@ -53,53 +58,34 @@ export async function PUT(request) {
       updated_at: new Date(),
     };
     if (qris_image_url !== undefined) payload.qris_image_url = qris_image_url;
-
-    let result;
-    if (existing) {
-      result = await supabaseServer
-        .from('settings')
-        .update(payload)
-        .eq('id', existing.id)
-        .select()
-        .single();
-    } else {
-      result = await supabaseServer
-        .from('settings')
-        .insert([payload])
-        .select()
-        .single();
+    if (cs_whatsapp_number !== undefined) payload.cs_whatsapp_number = cs_whatsapp_number;
+    if (special_lead_time_days !== undefined) {
+      payload.special_lead_time_days = parseInt(special_lead_time_days) || 3;
     }
 
-    if (result.error && /qris_image_url/i.test(result.error.message || '')) {
-      delete payload.qris_image_url;
+    async function tryWrite(p) {
       if (existing) {
-        result = await supabaseServer
-          .from('settings')
-          .update(payload)
-          .eq('id', existing.id)
-          .select()
-          .single();
-      } else {
-        result = await supabaseServer
-          .from('settings')
-          .insert([payload])
-          .select()
-          .single();
+        return supabaseServer.from('settings').update(p).eq('id', existing.id).select().single();
       }
+      return supabaseServer.from('settings').insert([p]).select().single();
     }
 
-    if (result.error) {
-      throw result.error;
+    let result = await tryWrite(payload);
+    // Handle missing-column errors gracefully
+    const droppable = ['qris_image_url', 'cs_whatsapp_number', 'special_lead_time_days'];
+    let attempt = 0;
+    while (result.error && attempt < droppable.length) {
+      const dropped = droppable.find((k) => new RegExp(k, 'i').test(result.error.message || ''));
+      if (!dropped) break;
+      delete payload[dropped];
+      result = await tryWrite(payload);
+      attempt++;
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result.data,
-    });
+    if (result.error) throw result.error;
+
+    return NextResponse.json({ success: true, data: result.data });
   } catch (err) {
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

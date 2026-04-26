@@ -2,15 +2,13 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
-const optionalCols = ['image_url', 'product_type', 'description', 'flavors', 'sizes'];
-
 export async function GET(request) {
   if (!isAdminAuthorized(request)) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
     const { data, error } = await supabaseServer
-      .from('products')
+      .from('vouchers')
       .select('*')
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -27,50 +25,30 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const {
-      name, price, stock, is_active, image_url,
-      product_type, description, flavors, sizes,
+      code, description, discount_type, discount_value,
+      min_order, max_uses, is_active, expires_at,
     } = body;
 
-    if (!name || price == null || stock == null) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (!code || discount_value == null) {
+      return NextResponse.json({ success: false, error: 'Code and discount_value required' }, { status: 400 });
     }
 
     const insertData = {
-      name,
-      price: parseFloat(price),
-      stock: parseInt(stock),
-      is_active: is_active ?? true,
-      product_type: product_type === 'special' ? 'special' : 'daily',
+      code: String(code).toUpperCase().trim(),
       description: description || null,
-      flavors: Array.isArray(flavors) ? flavors : [],
-      sizes: Array.isArray(sizes) ? sizes : [],
+      discount_type: discount_type === 'percent' ? 'percent' : 'amount',
+      discount_value: parseFloat(discount_value),
+      min_order: parseFloat(min_order || 0),
+      max_uses: max_uses ? parseInt(max_uses) : null,
+      is_active: is_active ?? true,
+      expires_at: expires_at || null,
     };
-    if (image_url) insertData.image_url = image_url;
 
-    let { data, error } = await supabaseServer
-      .from('products')
+    const { data, error } = await supabaseServer
+      .from('vouchers')
       .insert([insertData])
       .select()
       .single();
-
-    let attempt = 0;
-    while (error && attempt < optionalCols.length) {
-      const drop = optionalCols.find((k) => new RegExp(k, 'i').test(error.message || ''));
-      if (!drop) break;
-      delete insertData[drop];
-      const retry = await supabaseServer
-        .from('products')
-        .insert([insertData])
-        .select()
-        .single();
-      data = retry.data;
-      error = retry.error;
-      attempt++;
-    }
-
     if (error) throw error;
 
     return NextResponse.json({ success: true, data }, { status: 201 });

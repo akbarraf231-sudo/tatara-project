@@ -4,7 +4,15 @@ import { supabaseServer } from '@/lib/supabaseServer';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { items, customer_name } = body;
+    const {
+      items,
+      customer_name,
+      customer_phone,
+      order_type,
+      voucher_code,
+      pickup_date,
+      notes,
+    } = body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -23,11 +31,19 @@ export async function POST(request) {
     const rpcItems = items.map((item) => ({
       product_id: item.product_id,
       qty: item.qty,
+      flavor: item.flavor || null,
+      size: item.size || null,
+      notes: item.notes || null,
     }));
 
     const { data, error } = await supabaseServer.rpc('place_order', {
       p_items: rpcItems,
       p_customer_name: customer_name.trim(),
+      p_customer_phone: customer_phone?.trim() || null,
+      p_order_type: order_type || 'daily',
+      p_voucher_code: voucher_code?.trim() || null,
+      p_pickup_date: pickup_date || null,
+      p_notes: notes?.trim() || null,
     });
 
     if (error) {

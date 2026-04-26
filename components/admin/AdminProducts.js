@@ -1,8 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { ImageUpload } from '@/components/ImageUpload';
+
+const EMPTY_FORM = {
+  name: '',
+  price: '',
+  stock: '',
+  image_url: '',
+  is_active: true,
+  product_type: 'daily',
+  description: '',
+  flavors: [],
+  sizes: [],
+};
 
 export function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -12,13 +23,11 @@ export function AdminProducts() {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formMessage, setFormMessage] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    stock: '',
-    image_url: '',
-    is_active: true,
-  });
+  const [filter, setFilter] = useState('all');
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [flavorInput, setFlavorInput] = useState('');
+  const [sizeNameInput, setSizeNameInput] = useState('');
+  const [sizePriceInput, setSizePriceInput] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -31,10 +40,7 @@ export function AdminProducts() {
         headers: { 'x-admin-token': token },
       });
       const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || 'Gagal load products');
-      }
+      if (!res.ok || !result.success) throw new Error(result.error || 'Gagal load products');
       setProducts(result.data || []);
       setError(null);
     } catch (err) {
@@ -53,6 +59,10 @@ export function AdminProducts() {
       stock: product.stock.toString(),
       image_url: product.image_url || '',
       is_active: product.is_active,
+      product_type: product.product_type || 'daily',
+      description: product.description || '',
+      flavors: Array.isArray(product.flavors) ? product.flavors : [],
+      sizes: Array.isArray(product.sizes) ? product.sizes : [],
     });
     setShowForm(true);
   }
@@ -60,14 +70,32 @@ export function AdminProducts() {
   function handleNew() {
     setEditingId(null);
     setFormMessage(null);
-    setFormData({
-      name: '',
-      price: '',
-      stock: '',
-      image_url: '',
-      is_active: true,
-    });
+    setFormData(EMPTY_FORM);
     setShowForm(true);
+  }
+
+  function addFlavor() {
+    const v = flavorInput.trim();
+    if (!v) return;
+    setFormData({ ...formData, flavors: [...formData.flavors, v] });
+    setFlavorInput('');
+  }
+
+  function removeFlavor(idx) {
+    setFormData({ ...formData, flavors: formData.flavors.filter((_, i) => i !== idx) });
+  }
+
+  function addSize() {
+    const n = sizeNameInput.trim();
+    if (!n) return;
+    const p = sizePriceInput ? parseFloat(sizePriceInput) : 0;
+    setFormData({ ...formData, sizes: [...formData.sizes, { name: n, price: p }] });
+    setSizeNameInput('');
+    setSizePriceInput('');
+  }
+
+  function removeSize(idx) {
+    setFormData({ ...formData, sizes: formData.sizes.filter((_, i) => i !== idx) });
   }
 
   async function handleSave() {
@@ -75,10 +103,8 @@ export function AdminProducts() {
       setFormMessage({ type: 'error', text: 'Mohon isi Name, Price, dan Stock' });
       return;
     }
-
     setSaving(true);
     setFormMessage(null);
-
     try {
       const token = localStorage.getItem('adminToken');
       const data = {
@@ -87,43 +113,31 @@ export function AdminProducts() {
         stock: parseInt(formData.stock),
         image_url: formData.image_url || null,
         is_active: formData.is_active,
+        product_type: formData.product_type,
+        description: formData.description,
+        flavors: formData.flavors,
+        sizes: formData.sizes,
       };
-
-      const url = editingId
-        ? `/api/admin/products/${editingId}`
-        : '/api/admin/products';
+      const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
       const method = editingId ? 'PATCH' : 'POST';
-
       const res = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': token,
-        },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
         body: JSON.stringify(data),
       });
-
       const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.error || 'Gagal menyimpan produk');
 
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || 'Gagal menyimpan produk');
-      }
-
-      // Optimistic local update so it works even if anon SELECT is blocked by RLS
       if (editingId) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === editingId ? { ...p, ...result.data } : p))
-        );
+        setProducts((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...result.data } : p)));
       } else if (result.data) {
-        setProducts((prev) => [...prev, result.data]);
+        setProducts((prev) => [result.data, ...prev]);
       }
-
-      // Also try to refetch in case RLS is configured properly
       fetchProducts();
 
       setFormMessage({
         type: 'success',
-        text: editingId ? '✅ Produk berhasil di-update!' : '✅ Produk berhasil ditambahkan!',
+        text: editingId ? 'Produk berhasil di-update!' : 'Produk berhasil ditambahkan!',
       });
       setTimeout(() => {
         setShowForm(false);
@@ -138,21 +152,13 @@ export function AdminProducts() {
 
   async function handleDelete(id) {
     if (!confirm('Hapus produk ini?')) return;
-
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
-        headers: {
-          'x-admin-token': token,
-        },
+        headers: { 'x-admin-token': token },
       });
-
-      if (!res.ok) {
-        throw new Error('Failed to delete product');
-      }
-
-      // Optimistic remove
+      if (!res.ok) throw new Error('Failed to delete product');
       setProducts((prev) => prev.filter((p) => p.id !== id));
       fetchProducts();
     } catch (err) {
@@ -160,76 +166,100 @@ export function AdminProducts() {
     }
   }
 
-  if (loading) {
-    return <div className="text-[#5a1f2a]">Loading products...</div>;
-  }
+  if (loading) return <div className="text-[#5a1f2a]">Loading products...</div>;
+
+  const filtered = filter === 'all' ? products : products.filter((p) => (p.product_type || 'daily') === filter);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-2xl font-bold text-[#5a1f2a]">🥐 Products ({products.length})</h2>
-        <button
-          onClick={handleNew}
-          className="bg-[#5a1f2a] hover:bg-[#722f37] text-white font-semibold py-2 px-6 rounded-lg transition-colors shadow-sm"
-        >
-          + Add Product
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'daily', label: '☀️ Daily' },
+            { id: 'special', label: '🎂 Special' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setFilter(t.id)}
+              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
+                filter === t.id ? 'bg-[#5a1f2a] text-white' : 'bg-[#fce8e2] text-[#5a1f2a] hover:bg-[#e3b9b9]'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+          <button
+            onClick={handleNew}
+            className="bg-[#5a1f2a] hover:bg-[#722f37] text-white font-semibold py-2 px-6 rounded-full transition-colors shadow-sm"
+          >
+            + Add Product
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
-          {error}
-        </div>
+        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">{error}</div>
       )}
 
-      {/* Product Form */}
       {showForm && (
         <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 space-y-4 shadow-md">
           <h3 className="text-xl font-bold text-[#5a1f2a]">
-            {editingId ? '✏️ Edit Product' : '➕ New Product'}
+            {editingId ? 'Edit Product' : 'New Product'}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
-                Name *
-              </label>
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Type *</label>
+              <div className="flex gap-2">
+                {['daily', 'special'].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setFormData({ ...formData, product_type: t })}
+                    className={`flex-1 py-2 px-3 rounded-lg border-2 font-semibold capitalize transition-colors ${
+                      formData.product_type === t
+                        ? 'bg-[#5a1f2a] text-white border-[#5a1f2a]'
+                        : 'bg-white text-[#5a1f2a] border-[#e3b9b9]'
+                    }`}
+                  >
+                    {t === 'daily' ? '☀️ Daily' : '🎂 Special'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-[#722f37] mt-1">
+                Daily = same-day pickup, Special = pre-order H-N
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Name *</label>
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Croissant"
                 className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
-                Price (Rp) *
-              </label>
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Price (Rp) *</label>
               <input
                 type="number"
                 value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 placeholder="25000"
                 className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">
-                Stock *
-              </label>
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Stock *</label>
               <input
                 type="number"
                 value={formData.stock}
-                onChange={(e) =>
-                  setFormData({ ...formData, stock: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                 placeholder="50"
                 className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
@@ -240,20 +270,86 @@ export function AdminProducts() {
                 <input
                   type="checkbox"
                   checked={formData.is_active}
-                  onChange={(e) =>
-                    setFormData({ ...formData, is_active: e.target.checked })
-                  }
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   className="w-5 h-5 accent-[#5a1f2a]"
                 />
-                <span className="text-sm font-semibold text-[#5a1f2a]">
-                  Active (display di website)
-                </span>
+                <span className="text-sm font-semibold text-[#5a1f2a]">Active</span>
               </label>
             </div>
 
             <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Deskripsi produk..."
+                rows={2}
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">Varian Rasa</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={flavorInput}
+                  onChange={(e) => setFlavorInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addFlavor())}
+                  placeholder="e.g. Cokelat"
+                  className="flex-1 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                />
+                <button
+                  onClick={addFlavor}
+                  className="bg-[#5a1f2a] text-white px-4 py-2 rounded-lg font-semibold"
+                >
+                  + Add
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.flavors.map((f, i) => (
+                  <span key={i} className="bg-[#fce8e2] text-[#5a1f2a] px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                    {f}
+                    <button onClick={() => removeFlavor(i)} className="font-bold">×</button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">Varian Ukuran</label>
+              <div className="flex gap-2 mb-2 flex-wrap">
+                <input
+                  type="text"
+                  value={sizeNameInput}
+                  onChange={(e) => setSizeNameInput(e.target.value)}
+                  placeholder="e.g. Small / 16cm"
+                  className="flex-1 min-w-[200px] border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                />
+                <input
+                  type="number"
+                  value={sizePriceInput}
+                  onChange={(e) => setSizePriceInput(e.target.value)}
+                  placeholder="Selisih harga"
+                  className="w-40 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                />
+                <button onClick={addSize} className="bg-[#5a1f2a] text-white px-4 py-2 rounded-lg font-semibold">
+                  + Add
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.sizes.map((s, i) => (
+                  <span key={i} className="bg-[#fce8e2] text-[#5a1f2a] px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                    {s.name} {s.price ? `(+Rp ${Number(s.price).toLocaleString('id-ID')})` : ''}
+                    <button onClick={() => removeSize(i)} className="font-bold">×</button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
               <ImageUpload
-                label="Gambar Produk (optional)"
+                label="Gambar Produk"
                 value={formData.image_url}
                 onChange={(url) => setFormData({ ...formData, image_url: url })}
               />
@@ -261,13 +357,10 @@ export function AdminProducts() {
           </div>
 
           {formMessage && (
-            <div
-              className={`p-3 rounded-lg ${
-                formMessage.type === 'success'
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}
-            >
+            <div className={`p-3 rounded-lg ${
+              formMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
               {formMessage.text}
             </div>
           )}
@@ -278,7 +371,7 @@ export function AdminProducts() {
               disabled={saving}
               className="bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
-              {saving ? '⏳ Menyimpan...' : '💾 Save'}
+              {saving ? 'Menyimpan...' : 'Save'}
             </button>
             <button
               onClick={() => { setShowForm(false); setFormMessage(null); }}
@@ -291,19 +384,15 @@ export function AdminProducts() {
         </div>
       )}
 
-      {/* Products List */}
-      {products.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-12 text-center">
           <p className="text-4xl mb-2">🥖</p>
-          <p className="text-[#722f37]">Belum ada produk. Klik "Add Product" untuk mulai!</p>
+          <p className="text-[#722f37]">Belum ada produk.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white border-2 border-[#e3b9b9] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            >
+          {filtered.map((product) => (
+            <div key={product.id} className="bg-white border-2 border-[#e3b9b9] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               {product.image_url && (
                 <img
                   src={product.image_url}
@@ -314,14 +403,21 @@ export function AdminProducts() {
               )}
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3 gap-2">
-                  <h3 className="font-bold text-[#5a1f2a] flex-1">{product.name}</h3>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      product.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                        (product.product_type || 'daily') === 'special'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {(product.product_type || 'daily') === 'special' ? '🎂 SPECIAL' : '☀️ DAILY'}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-[#5a1f2a]">{product.name}</h3>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                    product.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
                     {product.is_active ? '✓' : '✗'}
                   </span>
                 </div>
@@ -329,9 +425,7 @@ export function AdminProducts() {
                 <div className="space-y-1 mb-4 text-sm text-[#5a1f2a]">
                   <p>
                     <span className="font-semibold">Price:</span>{' '}
-                    <span className="text-[#5a1f2a] font-bold">
-                      Rp {Number(product.price).toLocaleString('id-ID')}
-                    </span>
+                    <span className="font-bold">Rp {Number(product.price).toLocaleString('id-ID')}</span>
                   </p>
                   <p>
                     <span className="font-semibold">Stock:</span>{' '}
@@ -339,6 +433,12 @@ export function AdminProducts() {
                       {product.stock} {product.stock > 0 ? '' : '(Habis!)'}
                     </span>
                   </p>
+                  {product.flavors?.length > 0 && (
+                    <p className="text-xs"><span className="font-semibold">Rasa:</span> {product.flavors.join(', ')}</p>
+                  )}
+                  {product.sizes?.length > 0 && (
+                    <p className="text-xs"><span className="font-semibold">Ukuran:</span> {product.sizes.map((s) => s.name).join(', ')}</p>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
@@ -346,13 +446,13 @@ export function AdminProducts() {
                     onClick={() => handleEdit(product)}
                     className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded transition-colors text-sm"
                   >
-                    ✏️ Edit
+                    Edit
                   </button>
                   <button
                     onClick={() => handleDelete(product.id)}
                     className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition-colors text-sm"
                   >
-                    🗑️ Delete
+                    Delete
                   </button>
                 </div>
               </div>

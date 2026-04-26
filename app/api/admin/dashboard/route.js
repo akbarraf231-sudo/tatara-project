@@ -1,25 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
-
-function isAuthorized(request) {
-  const token = request.headers.get('x-admin-token');
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  return token === Buffer.from(adminPassword).toString('base64');
-}
+import { isAdminAuthorized } from '@/lib/adminAuth';
 
 export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
+  if (!isAdminAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-
   try {
     const { data: orders, error: ordersErr } = await supabaseServer
       .from('orders')
-      .select('id, total, status, created_at');
-
+      .select('id, total, status, created_at, order_type');
     if (ordersErr) throw ordersErr;
 
     const { data: items, error: itemsErr } = await supabaseServer
@@ -30,18 +20,20 @@ export async function GET(request) {
         products (name),
         orders!inner (status)
       `);
-
     if (itemsErr) throw itemsErr;
+
+    const { data: expenses, error: expErr } = await supabaseServer
+      .from('expenses')
+      .select('amount, expense_date, category');
+    if (expErr) throw expErr;
 
     return NextResponse.json({
       success: true,
       orders: orders || [],
       items: items || [],
+      expenses: expenses || [],
     });
   } catch (err) {
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
