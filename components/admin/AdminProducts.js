@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -225,29 +226,11 @@ export function AdminProducts() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-[#6b4423] mb-1">
-                Image URL (optional)
-              </label>
-              <input
-                type="text"
+              <ImageUpload
+                label="Gambar Produk (optional)"
                 value={formData.image_url}
-                onChange={(e) =>
-                  setFormData({ ...formData, image_url: e.target.value })
-                }
-                placeholder="https://..."
-                className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+                onChange={(url) => setFormData({ ...formData, image_url: url })}
               />
-              <p className="text-xs text-[#8b6f47] mt-1">
-                Upload gambar ke imgur.com → copy image URL → paste di sini
-              </p>
-              {formData.image_url && (
-                <img
-                  src={formData.image_url}
-                  alt="Preview"
-                  className="mt-2 w-32 h-32 object-cover rounded border-2 border-[#e8d5c4]"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              )}
             </div>
           </div>
 

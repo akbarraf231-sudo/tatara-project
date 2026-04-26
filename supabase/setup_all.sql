@@ -211,3 +211,25 @@ on conflict do nothing;
 insert into settings (whatsapp_number, location_link) values
   ('+6285801299758', 'https://maps.google.com/maps?q=Sinar+Jaya+Bakery')
 on conflict do nothing;
+
+-- ============================================================
+-- 5. STORAGE BUCKET for product / QRIS images
+-- ============================================================
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'bakery-images',
+  'bakery-images',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']::text[]
+)
+on conflict (id) do update set
+  public = true,
+  file_size_limit = 5242880;
+
+-- Public read policy
+drop policy if exists "Public read bakery images" on storage.objects;
+create policy "Public read bakery images"
+  on storage.objects for select
+  using (bucket_id = 'bakery-images');

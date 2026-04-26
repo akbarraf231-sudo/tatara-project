@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export function AdminSettings() {
   const [settings, setSettings] = useState({
@@ -111,37 +112,16 @@ export function AdminSettings() {
           </p>
         </div>
 
-        {/* QRIS Image URL */}
+        {/* QRIS Image */}
         <div>
-          <label htmlFor="qris" className="block text-sm font-bold text-[#6b4423] mb-2">
-            💳 QRIS Image URL
-          </label>
-          <input
-            id="qris"
-            type="text"
-            placeholder="https://example.com/qris.png"
+          <ImageUpload
+            label="💳 QRIS Image"
             value={settings.qris_image_url}
-            onChange={(e) =>
-              setSettings({ ...settings, qris_image_url: e.target.value })
-            }
-            className="w-full border-2 border-[#e8d5c4] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#c8794a] text-[#6b4423]"
+            onChange={(url) => setSettings({ ...settings, qris_image_url: url })}
           />
           <p className="text-xs text-[#8b6f47] mt-1">
-            Upload QRIS code lo ke imgur.com / cloudinary, terus paste link image-nya di sini
+            Drag & drop QRIS code, atau klik untuk pilih file
           </p>
-          {settings.qris_image_url && (
-            <div className="mt-3 p-3 bg-[#f5ebe0] rounded-lg">
-              <p className="text-xs text-[#8b6f47] mb-2">Preview:</p>
-              <img
-                src={settings.qris_image_url}
-                alt="QRIS Preview"
-                className="w-32 h-32 object-contain border-2 border-[#e8d5c4] rounded bg-white"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
         </div>
 
         {/* Messages */}
@@ -172,7 +152,7 @@ export function AdminSettings() {
         <p className="font-bold mb-2">💡 Tips:</p>
         <ul className="list-disc list-inside space-y-1">
           <li><strong>Google Maps Link:</strong> Buka Google Maps → cari toko → Share → Copy link</li>
-          <li><strong>QRIS:</strong> Upload gambar QRIS lo ke <a href="https://imgur.com/upload" target="_blank" rel="noopener noreferrer" className="underline font-semibold">imgur.com</a> → Right-click image → Copy image address → Paste di sini</li>
+          <li><strong>QRIS:</strong> Drag & drop file QRIS, atau screenshot QRIS lalu paste (Ctrl+V) di kotak upload</li>
         </ul>
       </div>
     </div>
