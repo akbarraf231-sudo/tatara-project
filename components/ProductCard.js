@@ -7,8 +7,8 @@ export function ProductCard({ product }) {
   const inStock = product.stock > 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow border-2 border-amber-100">
-      <div className="w-full h-48 bg-amber-100 flex items-center justify-center">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow border-2 border-[#e8d5c4]">
+      <div className="w-full h-48 bg-[#f7e9d7] flex items-center justify-center">
         {product.image ? (
           <img
             src={product.image}
@@ -20,13 +20,13 @@ export function ProductCard({ product }) {
         )}
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-amber-900 mb-2">
+        <h3 className="text-lg font-semibold text-[#6b4423] mb-2">
           {product.name}
         </h3>
-        <p className="text-sm text-amber-700 mb-3">
+        <p className="text-sm text-[#8b6f47] mb-3">
           {inStock ? `${product.stock} available` : 'Out of stock'}
         </p>
-        <p className="text-2xl font-bold text-amber-700 mb-4">
+        <p className="text-2xl font-bold text-[#c8794a] mb-4">
           Rp {product.price.toLocaleString('id-ID')}
         </p>
         <button
@@ -34,7 +34,7 @@ export function ProductCard({ product }) {
           disabled={!inStock}
           className={`w-full font-semibold py-2 px-4 rounded-lg transition-colors ${
             inStock
-              ? 'bg-amber-600 hover:bg-amber-700 text-white'
+              ? 'bg-[#c8794a] hover:bg-[#b6663a] text-white'
               : 'bg-gray-300 cursor-not-allowed text-gray-600'
           }`}
         >

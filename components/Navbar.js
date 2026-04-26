@@ -28,27 +28,30 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="bg-amber-50 border-b-2 border-amber-900 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          {/* Logo and Name */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-900 rounded-full flex items-center justify-center text-white font-bold">
-              SJ
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-amber-900">Sinar Jaya</h1>
-              <p className="text-xs text-amber-700">Bakery</p>
-            </div>
+      <nav className="bg-white border-b-4 border-[#6b4423] sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="text-2xl">🥐</div>
+            <h1 className="text-2xl font-bold text-[#6b4423]">BAKERY</h1>
           </div>
 
-          {/* Admin and Cart Icons */}
+          {/* Nav Links (Desktop) */}
+          <div className="hidden md:flex gap-6 text-[#6b4423] font-semibold">
+            <a href="#home" className="hover:text-[#c8794a] transition-colors">HOME</a>
+            <a href="#menu" className="hover:text-[#c8794a] transition-colors">MENU</a>
+            <a href="#about" className="hover:text-[#c8794a] transition-colors">ABOUT</a>
+            <a href="#contact" className="hover:text-[#c8794a] transition-colors">CONTACT</a>
+          </div>
+
+          {/* Right Side - Icons & Buttons */}
           <div className="flex items-center gap-4">
             {isAdmin && (
-              <div className="text-sm text-amber-700">
+              <div className="text-sm text-[#6b4423] hidden md:flex items-center gap-2">
                 <span className="font-semibold">Admin</span>
                 <button
                   onClick={handleAdminLogout}
-                  className="ml-2 text-xs bg-red-200 hover:bg-red-300 text-red-800 px-2 py-1 rounded"
+                  className="text-xs bg-red-200 hover:bg-red-300 text-red-800 px-2 py-1 rounded"
                 >
                   Logout
                 </button>
@@ -64,11 +67,11 @@ export function Navbar() {
                   setIsAdminModalOpen(true);
                 }
               }}
-              className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-[#f5ebe0] rounded-lg transition-colors"
               title="Admin"
             >
               <svg
-                className="w-6 h-6 text-amber-900"
+                className="w-6 h-6 text-[#6b4423]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -96,11 +99,11 @@ export function Navbar() {
                   cartElement.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="p-2 hover:bg-amber-100 rounded-lg transition-colors relative"
+              className="p-2 hover:bg-[#f5ebe0] rounded-lg transition-colors relative"
               title="Cart"
             >
               <svg
-                className="w-6 h-6 text-amber-900"
+                className="w-6 h-6 text-[#6b4423]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -113,7 +116,7 @@ export function Navbar() {
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#c8794a] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
