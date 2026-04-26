@@ -11,6 +11,7 @@ export async function POST(request) {
       order_type,
       voucher_code,
       pickup_date,
+      pickup_time,
       notes,
     } = body;
 
@@ -43,6 +44,7 @@ export async function POST(request) {
       p_order_type: order_type || 'daily',
       p_voucher_code: voucher_code?.trim() || null,
       p_pickup_date: pickup_date || null,
+      p_pickup_time: pickup_time || null,
       p_notes: notes?.trim() || null,
     });
 

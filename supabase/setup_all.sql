@@ -63,11 +63,28 @@ alter table products add column if not exists sizes jsonb default '[]'::jsonb;
 
 alter table orders add column if not exists order_type text not null default 'daily';
 alter table orders add column if not exists pickup_date date;
+alter table orders add column if not exists pickup_time time;
 alter table orders add column if not exists customer_phone text;
 alter table orders add column if not exists notes text;
 alter table orders add column if not exists discount numeric(10, 2) not null default 0;
 alter table orders add column if not exists subtotal numeric(10, 2);
 alter table orders add column if not exists voucher_code text;
+alter table orders add column if not exists order_number text;
+
+-- Sequence for order numbers (SJB-001, SJB-002, ...)
+create sequence if not exists order_number_seq start 1;
+
+create or replace function generate_order_number() returns text
+language plpgsql as $$
+declare
+  v_num integer;
+begin
+  v_num := nextval('order_number_seq');
+  return 'SJB-' || lpad(v_num::text, 3, '0');
+end;
+$$;
+
+create unique index if not exists idx_orders_order_number on orders(order_number) where order_number is not null;
 
 alter table order_items add column if not exists flavor text;
 alter table order_items add column if not exists size text;
@@ -178,6 +195,7 @@ create policy "Public read landing" on landing_content for select using (true);
 
 drop function if exists place_order(jsonb, text);
 drop function if exists place_order(jsonb, text, text, text, text, date, text);
+drop function if exists place_order(jsonb, text, text, text, text, date, time, text);
 
 create or replace function place_order(
   p_items jsonb,
@@ -186,6 +204,7 @@ create or replace function place_order(
   p_order_type text default 'daily',
   p_voucher_code text default null,
   p_pickup_date date default null,
+  p_pickup_time time default null,
   p_notes text default null
 )
 returns jsonb
@@ -283,12 +302,14 @@ begin
 
   insert into orders (
     customer_name, customer_phone, total, subtotal, discount,
-    voucher_code, status, expires_at, order_type, pickup_date, notes
+    voucher_code, status, expires_at, order_type, pickup_date, pickup_time, notes,
+    order_number
   )
   values (
     p_customer_name, p_customer_phone, v_total, v_subtotal, v_discount,
     case when v_discount > 0 then upper(trim(p_voucher_code)) else null end,
-    'pending', v_expires_at, coalesce(p_order_type, 'daily'), p_pickup_date, p_notes
+    'pending', v_expires_at, coalesce(p_order_type, 'daily'), p_pickup_date, p_pickup_time, p_notes,
+    generate_order_number()
   )
   returning id into v_order_id;
 
@@ -311,6 +332,7 @@ begin
   return jsonb_build_object(
     'success', true,
     'order_id', v_order_id,
+    'order_number', (select order_number from orders where id = v_order_id),
     'subtotal', v_subtotal,
     'discount', v_discount,
     'total', v_total,

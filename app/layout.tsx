@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/lib/cartContext";
 import { Navbar } from "@/components/Navbar";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { SplashScreen } from "@/components/SplashScreen";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#fce8e2]">
+        <SplashScreen />
         <CartProvider>
           <Navbar />
           {children}

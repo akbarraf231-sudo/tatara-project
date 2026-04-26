@@ -128,12 +128,8 @@ export function AdminProducts() {
       const result = await res.json();
       if (!res.ok || !result.success) throw new Error(result.error || 'Gagal menyimpan produk');
 
-      if (editingId) {
-        setProducts((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...result.data } : p)));
-      } else if (result.data) {
-        setProducts((prev) => [result.data, ...prev]);
-      }
-      fetchProducts();
+      // Refresh list from server to ensure consistency, no double-update flicker
+      await fetchProducts();
 
       setFormMessage({
         type: 'success',
@@ -159,8 +155,7 @@ export function AdminProducts() {
         headers: { 'x-admin-token': token },
       });
       if (!res.ok) throw new Error('Failed to delete product');
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      fetchProducts();
+      await fetchProducts();
     } catch (err) {
       alert(err.message);
     }

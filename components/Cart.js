@@ -9,6 +9,7 @@ export function Cart() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [pickupDate, setPickupDate] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
   const [notes, setNotes] = useState('');
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherInfo, setVoucherInfo] = useState(null);
@@ -73,15 +74,19 @@ export function Cart() {
 
   async function handleCheckout() {
     if (!customerName.trim()) {
-      setError('Mohon isi nama lo dulu');
+      setError('Mohon isi nama kamu dulu ya 😊');
       return;
     }
     if (!customerPhone.trim()) {
-      setError('Mohon isi nomor WA lo dulu');
+      setError('Mohon isi nomor WA kamu dulu ya 📱');
       return;
     }
     if (hasSpecialItems && !pickupDate) {
       setError(`Mohon pilih tanggal pickup (minimal H-${leadTime})`);
+      return;
+    }
+    if (!pickupTime) {
+      setError('Mohon pilih jam pickup-nya 🕐');
       return;
     }
     setSubmitting(true);
@@ -104,6 +109,7 @@ export function Cart() {
           order_type: hasSpecialItems ? 'special' : 'daily',
           voucher_code: voucherInfo ? voucherCode : null,
           pickup_date: hasSpecialItems ? pickupDate : null,
+          pickup_time: pickupTime || null,
           notes,
         }),
       });
@@ -127,6 +133,7 @@ export function Cart() {
     setCustomerName('');
     setCustomerPhone('');
     setPickupDate('');
+    setPickupTime('');
     setNotes('');
     clearVoucher();
     setOrderResult(null);
@@ -134,12 +141,12 @@ export function Cart() {
 
   return (
     <>
-      <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-[#e3b9b9]">
+      <div className="bg-white rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#e3b9b9]">
         {items.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-6xl mb-3">🛒</p>
-            <p className="text-[#5a1f2a] text-xl font-semibold">Keranjang Kosong</p>
-            <p className="text-[#722f37] text-sm mt-1">Pilih cake favorit lo!</p>
+          <div className="text-center py-10 sm:py-12">
+            <p className="text-5xl sm:text-6xl mb-3">🛒</p>
+            <p className="text-[#5a1f2a] text-lg sm:text-xl font-semibold">Keranjang Kosong</p>
+            <p className="text-[#722f37] text-sm mt-1">Lagi pengen yang mana? Pilih favorit kamu 😋</p>
           </div>
         ) : (
           <>
@@ -183,32 +190,57 @@ export function Cart() {
             <div className="border-t-2 border-[#e3b9b9] pt-4 space-y-3">
               <input
                 type="text"
-                placeholder="Nama lo..."
+                placeholder="Nama kamu..."
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292]"
+                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base"
                 disabled={submitting}
               />
               <input
                 type="tel"
+                inputMode="numeric"
                 placeholder="Nomor WhatsApp (wajib)"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292]"
+                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base"
                 disabled={submitting}
               />
 
-              {hasSpecialItems && (
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-3">
-                  <p className="text-xs text-purple-800 font-semibold mb-2">
+              {hasSpecialItems ? (
+                <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-3 space-y-2">
+                  <p className="text-xs text-purple-800 font-semibold">
                     🎂 Special Order — minimal H-{leadTime} hari
                   </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">📅 Tanggal Pickup</label>
+                      <input
+                        type="date"
+                        value={pickupDate}
+                        min={minDate}
+                        onChange={(e) => setPickupDate(e.target.value)}
+                        className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">🕐 Jam Pickup</label>
+                      <input
+                        type="time"
+                        value={pickupTime}
+                        onChange={(e) => setPickupTime(e.target.value)}
+                        className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3">
+                  <label className="block text-xs text-orange-800 font-semibold mb-2">☀️ Daily Order — Jam Pickup Hari Ini</label>
                   <input
-                    type="date"
-                    value={pickupDate}
-                    min={minDate}
-                    onChange={(e) => setPickupDate(e.target.value)}
-                    className="w-full border-2 border-purple-200 rounded-lg py-2 px-3 text-[#5a1f2a]"
+                    type="time"
+                    value={pickupTime}
+                    onChange={(e) => setPickupTime(e.target.value)}
+                    className="w-full border-2 border-orange-200 rounded-lg py-2 px-3 text-[#5a1f2a]"
                   />
                 </div>
               )}
@@ -295,6 +327,7 @@ export function Cart() {
           isOpen={showPayment}
           onClose={handlePaymentClose}
           orderId={orderResult.order_id}
+          orderNumber={orderResult.order_number}
           customerName={customerName}
           customerPhone={customerPhone}
           items={items}
@@ -303,6 +336,7 @@ export function Cart() {
           total={grandTotal}
           orderType={hasSpecialItems ? 'special' : 'daily'}
           pickupDate={pickupDate}
+          pickupTime={pickupTime}
           notes={notes}
           voucherCode={voucherInfo ? voucherCode : null}
         />
