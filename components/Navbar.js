@@ -22,6 +22,7 @@ export function Navbar() {
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true);
     setIsAdminModalOpen(false);
+    window.location.href = '/admin';
   };
 
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
