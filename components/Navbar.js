@@ -16,10 +16,24 @@ export function Navbar() {
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     setIsAdmin(!!token);
-    fetch('/api/settings')
-      .then((r) => r.json())
-      .then((d) => setLogoUrl(d.data?.site_logo_url || ''))
-      .catch(() => {});
+
+    const fetchLogo = () => {
+      fetch('/api/settings')
+        .then((r) => r.json())
+        .then((d) => setLogoUrl(d.data?.site_logo_url || ''))
+        .catch(() => {});
+    };
+
+    fetchLogo();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchLogo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const handleAdminLoginSuccess = () => {

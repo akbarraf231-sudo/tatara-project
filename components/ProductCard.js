@@ -52,7 +52,7 @@ function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
                 <button
                   key={f}
                   type="button"
-                  onClick={() => setSelectedFlavor(f)}
+                  onClick={() => setSelectedFlavor(selectedFlavor === f ? '' : f)}
                   className={`px-3 py-2 rounded-full text-sm border-2 transition-colors ${
                     selectedFlavor === f
                       ? 'bg-[#5a1f2a] text-white border-[#5a1f2a]'
