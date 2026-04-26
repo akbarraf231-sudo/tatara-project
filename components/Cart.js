@@ -76,6 +76,10 @@ export function Cart() {
       setError('Mohon isi nama lo dulu');
       return;
     }
+    if (!customerPhone.trim()) {
+      setError('Mohon isi nomor WA lo dulu');
+      return;
+    }
     if (hasSpecialItems && !pickupDate) {
       setError(`Mohon pilih tanggal pickup (minimal H-${leadTime})`);
       return;
@@ -187,7 +191,7 @@ export function Cart() {
               />
               <input
                 type="tel"
-                placeholder="Nomor WhatsApp (opsional)"
+                placeholder="Nomor WhatsApp (wajib)"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292]"
@@ -276,7 +280,7 @@ export function Cart() {
 
               <button
                 onClick={handleCheckout}
-                disabled={submitting || !customerName.trim()}
+                disabled={submitting || !customerName.trim() || !customerPhone.trim()}
                 className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
               >
                 {submitting ? '⏳ Memproses...' : '💳 Checkout & Bayar'}
