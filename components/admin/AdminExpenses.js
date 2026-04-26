@@ -2,12 +2,25 @@
 
 import { useState, useEffect } from 'react';
 
+const EMPTY_TOTALS = {
+  purchase: { total: 0, today: 0, month: 0 },
+  operational: { total: 0, today: 0, month: 0 },
+  all: { total: 0, today: 0, month: 0 },
+};
+
 export function AdminExpenses() {
   const [expenses, setExpenses] = useState([]);
+  const [totals, setTotals] = useState(EMPTY_TOTALS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('purchase');
-  const [form, setForm] = useState({
+  const [purchaseForm, setPurchaseForm] = useState({
+    description: '',
+    quantity: '',
+    unit_price: '',
+    expense_date: new Date().toISOString().slice(0, 10),
+  });
+  const [operationalForm, setOperationalForm] = useState({
     description: '',
     amount: '',
     expense_date: new Date().toISOString().slice(0, 10),
@@ -23,6 +36,7 @@ export function AdminExpenses() {
       const result = await res.json();
       if (!res.ok || !result.success) throw new Error(result.error);
       setExpenses(result.data || []);
+      setTotals(result.totals || EMPTY_TOTALS);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -31,8 +45,51 @@ export function AdminExpenses() {
     }
   }
 
-  async function handleAdd() {
-    if (!form.description.trim() || !form.amount) {
+  async function handleAddPurchase() {
+    if (!purchaseForm.description.trim()) {
+      alert('Deskripsi wajib diisi');
+      return;
+    }
+    if (!purchaseForm.quantity || Number(purchaseForm.quantity) <= 0) {
+      alert('Quantity harus lebih dari 0');
+      return;
+    }
+    if (purchaseForm.unit_price === '' || Number(purchaseForm.unit_price) < 0) {
+      alert('Unit price tidak valid');
+      return;
+    }
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({
+          category: 'purchase',
+          description: purchaseForm.description,
+          quantity: purchaseForm.quantity,
+          unit_price: purchaseForm.unit_price,
+          expense_date: purchaseForm.expense_date,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.error);
+      setPurchaseForm({
+        description: '',
+        quantity: '',
+        unit_price: '',
+        expense_date: new Date().toISOString().slice(0, 10),
+      });
+      fetchExpenses();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAddOperational() {
+    if (!operationalForm.description.trim() || !operationalForm.amount) {
       alert('Deskripsi dan jumlah wajib diisi');
       return;
     }
@@ -42,11 +99,16 @@ export function AdminExpenses() {
       const res = await fetch('/api/admin/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ ...form, category: activeTab }),
+        body: JSON.stringify({
+          category: 'operational',
+          description: operationalForm.description,
+          amount: operationalForm.amount,
+          expense_date: operationalForm.expense_date,
+        }),
       });
       const result = await res.json();
       if (!res.ok || !result.success) throw new Error(result.error);
-      setForm({
+      setOperationalForm({
         description: '',
         amount: '',
         expense_date: new Date().toISOString().slice(0, 10),
@@ -75,7 +137,6 @@ export function AdminExpenses() {
 
   if (loading) return <div className="text-[#5a1f2a]">Loading...</div>;
 
-  // Filter by active tab category
   const tabConfig = {
     purchase: { label: 'Pembelian', icon: '🛒', placeholder: 'Beli tepung, telur, gula...' },
     operational: { label: 'Pengeluaran', icon: '💸', placeholder: 'Gaji, listrik, sewa...' },
@@ -83,22 +144,16 @@ export function AdminExpenses() {
 
   const filtered = expenses.filter((e) => {
     if (activeTab === 'purchase') return e.category === 'purchase';
-    return e.category !== 'purchase'; // operational + other
+    return e.category !== 'purchase';
   });
 
-  const total = filtered.reduce((s, e) => s + Number(e.amount), 0);
-  const today = new Date().toISOString().slice(0, 10);
-  const todayTotal = filtered.filter((e) => e.expense_date === today).reduce((s, e) => s + Number(e.amount), 0);
-  const monthStart = today.slice(0, 7) + '-01';
-  const monthTotal = filtered.filter((e) => e.expense_date >= monthStart).reduce((s, e) => s + Number(e.amount), 0);
-
+  const tabTotals = totals[activeTab] || { total: 0, today: 0, month: 0 };
   const cfg = tabConfig[activeTab];
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl sm:text-2xl font-bold text-[#5a1f2a]">💰 Catatan Keuangan</h2>
 
-      {/* Tab Switcher */}
       <div className="flex gap-2 bg-white border-2 border-[#e3b9b9] rounded-lg p-1">
         {Object.entries(tabConfig).map(([key, t]) => (
           <button
@@ -118,56 +173,103 @@ export function AdminExpenses() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-3 sm:p-4">
           <p className="text-xs text-[#722f37]">Hari Ini ({cfg.label})</p>
-          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {todayTotal.toLocaleString('id-ID')}</p>
+          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {tabTotals.today.toLocaleString('id-ID')}</p>
         </div>
         <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-3 sm:p-4">
           <p className="text-xs text-[#722f37]">Bulan Ini ({cfg.label})</p>
-          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {monthTotal.toLocaleString('id-ID')}</p>
+          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {tabTotals.month.toLocaleString('id-ID')}</p>
         </div>
         <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-3 sm:p-4">
           <p className="text-xs text-[#722f37]">Total {cfg.label}</p>
-          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {total.toLocaleString('id-ID')}</p>
+          <p className="text-lg sm:text-2xl font-bold text-[#5a1f2a]">Rp {tabTotals.total.toLocaleString('id-ID')}</p>
         </div>
       </div>
 
       {error && <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">{error}</div>}
 
-      <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-4 sm:p-6 space-y-3">
-        <h3 className="font-bold text-[#5a1f2a]">+ Catat {cfg.label}</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input
-            type="text"
-            placeholder={`Deskripsi (e.g. ${cfg.placeholder})`}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="sm:col-span-2 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
-          />
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="Jumlah Rp"
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
-          />
-          <input
-            type="date"
-            value={form.expense_date}
-            onChange={(e) => setForm({ ...form, expense_date: e.target.value })}
-            className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={saving}
-            className="sm:col-span-2 bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg"
-          >
-            {saving ? 'Menyimpan...' : `+ Tambah ${cfg.label}`}
-          </button>
+      {activeTab === 'purchase' ? (
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-4 sm:p-6 space-y-3">
+          <h3 className="font-bold text-[#5a1f2a]">+ Catat {cfg.label}</h3>
+          <p className="text-xs text-[#722f37]">Subtotal &amp; total dihitung otomatis di server</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              type="text"
+              placeholder={`Deskripsi (e.g. ${cfg.placeholder})`}
+              value={purchaseForm.description}
+              onChange={(e) => setPurchaseForm({ ...purchaseForm, description: e.target.value })}
+              className="sm:col-span-2 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              placeholder="Quantity (e.g. 5)"
+              value={purchaseForm.quantity}
+              onChange={(e) => setPurchaseForm({ ...purchaseForm, quantity: e.target.value })}
+              className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              placeholder="Unit Price Rp"
+              value={purchaseForm.unit_price}
+              onChange={(e) => setPurchaseForm({ ...purchaseForm, unit_price: e.target.value })}
+              className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <input
+              type="date"
+              value={purchaseForm.expense_date}
+              onChange={(e) => setPurchaseForm({ ...purchaseForm, expense_date: e.target.value })}
+              className="sm:col-span-2 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <button
+              onClick={handleAddPurchase}
+              disabled={saving}
+              className="sm:col-span-2 bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg"
+            >
+              {saving ? 'Menyimpan...' : `+ Tambah ${cfg.label}`}
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-4 sm:p-6 space-y-3">
+          <h3 className="font-bold text-[#5a1f2a]">+ Catat {cfg.label}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              type="text"
+              placeholder={`Deskripsi (e.g. ${cfg.placeholder})`}
+              value={operationalForm.description}
+              onChange={(e) => setOperationalForm({ ...operationalForm, description: e.target.value })}
+              className="sm:col-span-2 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <input
+              type="number"
+              inputMode="numeric"
+              placeholder="Jumlah Rp"
+              value={operationalForm.amount}
+              onChange={(e) => setOperationalForm({ ...operationalForm, amount: e.target.value })}
+              className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <input
+              type="date"
+              value={operationalForm.expense_date}
+              onChange={(e) => setOperationalForm({ ...operationalForm, expense_date: e.target.value })}
+              className="border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a]"
+            />
+            <button
+              onClick={handleAddOperational}
+              disabled={saving}
+              className="sm:col-span-2 bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg"
+            >
+              {saving ? 'Menyimpan...' : `+ Tambah ${cfg.label}`}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border-2 border-[#e3b9b9] rounded-lg overflow-hidden">
-        {/* Mobile: Card list, Desktop: Table */}
         <div className="block sm:hidden divide-y divide-[#fce8e2]">
           {filtered.length === 0 ? (
             <p className="text-center p-6 text-[#722f37]">Belum ada catatan {cfg.label.toLowerCase()}</p>
@@ -176,6 +278,11 @@ export function AdminExpenses() {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#5a1f2a] text-sm break-words">{e.description}</p>
                 <p className="text-xs text-[#722f37]">{new Date(e.expense_date).toLocaleDateString('id-ID')}</p>
+                {activeTab === 'purchase' && e.quantity != null && e.unit_price != null && (
+                  <p className="text-xs text-[#722f37]">
+                    {Number(e.quantity).toLocaleString('id-ID')} × Rp {Number(e.unit_price).toLocaleString('id-ID')}
+                  </p>
+                )}
               </div>
               <div className="text-right shrink-0">
                 <p className="font-bold text-[#5a1f2a] text-sm">Rp {Number(e.amount).toLocaleString('id-ID')}</p>
@@ -189,17 +296,29 @@ export function AdminExpenses() {
             <tr>
               <th className="text-left p-3 text-[#5a1f2a]">Tanggal</th>
               <th className="text-left p-3 text-[#5a1f2a]">Deskripsi</th>
-              <th className="text-right p-3 text-[#5a1f2a]">Jumlah</th>
+              {activeTab === 'purchase' && (
+                <>
+                  <th className="text-right p-3 text-[#5a1f2a]">Qty</th>
+                  <th className="text-right p-3 text-[#5a1f2a]">Unit Price</th>
+                </>
+              )}
+              <th className="text-right p-3 text-[#5a1f2a]">{activeTab === 'purchase' ? 'Subtotal' : 'Jumlah'}</th>
               <th className="text-center p-3 text-[#5a1f2a]"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={4} className="text-center p-6 text-[#722f37]">Belum ada catatan {cfg.label.toLowerCase()}</td></tr>
+              <tr><td colSpan={activeTab === 'purchase' ? 6 : 4} className="text-center p-6 text-[#722f37]">Belum ada catatan {cfg.label.toLowerCase()}</td></tr>
             ) : filtered.map((e) => (
               <tr key={e.id} className="border-t border-[#fce8e2]">
                 <td className="p-3 text-[#5a1f2a]">{new Date(e.expense_date).toLocaleDateString('id-ID')}</td>
                 <td className="p-3 text-[#5a1f2a]">{e.description}</td>
+                {activeTab === 'purchase' && (
+                  <>
+                    <td className="p-3 text-right text-[#5a1f2a]">{e.quantity != null ? Number(e.quantity).toLocaleString('id-ID') : '—'}</td>
+                    <td className="p-3 text-right text-[#5a1f2a]">{e.unit_price != null ? `Rp ${Number(e.unit_price).toLocaleString('id-ID')}` : '—'}</td>
+                  </>
+                )}
                 <td className="p-3 text-right text-[#5a1f2a] font-semibold">Rp {Number(e.amount).toLocaleString('id-ID')}</td>
                 <td className="p-3 text-center">
                   <button onClick={() => handleDelete(e.id)} className="text-red-600 hover:text-red-800 font-semibold">

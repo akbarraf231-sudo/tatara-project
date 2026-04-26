@@ -127,6 +127,9 @@ create table if not exists expenses (
   created_at timestamp with time zone default now()
 );
 
+alter table expenses add column if not exists quantity numeric(10, 2);
+alter table expenses add column if not exists unit_price numeric(10, 2);
+
 create index if not exists idx_expenses_date on expenses(expense_date);
 create index if not exists idx_expenses_category on expenses(category);
 
