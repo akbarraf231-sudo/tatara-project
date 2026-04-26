@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 
 export function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -19,22 +18,17 @@ export function AdminOrders() {
 
   async function fetchOrders() {
     try {
-      const { data, error: err } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items(
-            id,
-            product_id,
-            qty,
-            price,
-            products(id, name)
-          )
-        `)
-        .order('created_at', { ascending: false });
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/orders', {
+        headers: { 'x-admin-token': token },
+      });
+      const result = await res.json();
 
-      if (err) throw err;
-      setOrders(data || []);
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Gagal load orders');
+      }
+
+      setOrders(result.data || []);
       setError(null);
     } catch (err) {
       setError(err.message);

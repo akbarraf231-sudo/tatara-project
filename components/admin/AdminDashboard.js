@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -25,13 +24,20 @@ export function AdminDashboard() {
 
   async function fetchStats() {
     try {
-      const { data: orders, error: ordersErr } = await supabase
-        .from('orders')
-        .select('id, total, status, created_at');
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/dashboard', {
+        headers: { 'x-admin-token': token },
+      });
+      const result = await res.json();
 
-      if (ordersErr) throw ordersErr;
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Gagal load dashboard');
+      }
 
-      const incomeOrders = (orders || []).filter(
+      const orders = result.orders || [];
+      const items = result.items || [];
+
+      const incomeOrders = orders.filter(
         (o) => o.status === 'confirmed' || o.status === 'completed'
       );
 
@@ -56,21 +62,12 @@ export function AdminDashboard() {
         completed: 0,
         cancelled: 0,
       };
-      (orders || []).forEach((o) => {
+      orders.forEach((o) => {
         if (counts[o.status] !== undefined) counts[o.status]++;
       });
 
-      const { data: items } = await supabase
-        .from('order_items')
-        .select(`
-          qty,
-          price,
-          products(name),
-          orders!inner(status)
-        `);
-
       const productMap = {};
-      (items || []).forEach((item) => {
+      items.forEach((item) => {
         const status = item.orders?.status;
         if (status !== 'confirmed' && status !== 'completed') return;
         const name = item.products?.name || 'Unknown';

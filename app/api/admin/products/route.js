@@ -7,6 +7,31 @@ function isAuthorized(request) {
   return token === Buffer.from(adminPassword).toString('base64');
 }
 
+export async function GET(request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const { data, error } = await supabaseServer
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data: data || [] });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json(

@@ -56,6 +56,26 @@ create index if not exists idx_order_items_product_id on order_items(product_id)
 create index if not exists idx_products_is_active on products(is_active);
 
 -- ============================================================
+-- RLS Policies (allow public read for storefront and admin views)
+-- ============================================================
+
+alter table products enable row level security;
+drop policy if exists "Public read products" on products;
+create policy "Public read products" on products for select using (true);
+
+alter table settings enable row level security;
+drop policy if exists "Public read settings" on settings;
+create policy "Public read settings" on settings for select using (true);
+
+alter table orders enable row level security;
+drop policy if exists "Public read orders" on orders;
+create policy "Public read orders" on orders for select using (true);
+
+alter table order_items enable row level security;
+drop policy if exists "Public read order_items" on order_items;
+create policy "Public read order_items" on order_items for select using (true);
+
+-- ============================================================
 -- 2. RPC: place_order
 -- ============================================================
 

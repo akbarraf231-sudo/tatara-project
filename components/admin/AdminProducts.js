@@ -26,13 +26,16 @@ export function AdminProducts() {
 
   async function fetchProducts() {
     try {
-      const { data, error: err } = await supabase
-        .from('products')
-        .select('*')
-        .order('id');
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/products', {
+        headers: { 'x-admin-token': token },
+      });
+      const result = await res.json();
 
-      if (err) throw err;
-      setProducts(data || []);
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Gagal load products');
+      }
+      setProducts(result.data || []);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -106,7 +109,18 @@ export function AdminProducts() {
         throw new Error(result.error || 'Gagal menyimpan produk');
       }
 
-      await fetchProducts();
+      // Optimistic local update so it works even if anon SELECT is blocked by RLS
+      if (editingId) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === editingId ? { ...p, ...result.data } : p))
+        );
+      } else if (result.data) {
+        setProducts((prev) => [...prev, result.data]);
+      }
+
+      // Also try to refetch in case RLS is configured properly
+      fetchProducts();
+
       setFormMessage({
         type: 'success',
         text: editingId ? '✅ Produk berhasil di-update!' : '✅ Produk berhasil ditambahkan!',
@@ -138,7 +152,9 @@ export function AdminProducts() {
         throw new Error('Failed to delete product');
       }
 
-      await fetchProducts();
+      // Optimistic remove
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      fetchProducts();
     } catch (err) {
       alert(err.message);
     }
