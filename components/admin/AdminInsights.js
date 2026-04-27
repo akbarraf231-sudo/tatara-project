@@ -182,10 +182,10 @@ export function AdminInsights() {
             <span className="text-xs opacity-75">{recommendationIndex + 1} / {insights.recommendations.length}</span>
           </div>
           {currentRec && (
-            <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
-              <div className="text-4xl mb-3">{currentRec.icon}</div>
-              <h4 className="text-xl font-bold mb-2">{currentRec.title}</h4>
-              <p className="text-base mb-4">{currentRec.message}</p>
+            <div className="bg-white bg-opacity-5 rounded-lg p-6 backdrop-blur-sm border border-white border-opacity-20">
+              <div className="text-5xl mb-4">{currentRec.icon}</div>
+              <h4 className="text-2xl font-bold mb-3">{currentRec.title}</h4>
+              <p className="text-lg font-semibold mb-4 leading-relaxed">{currentRec.message}</p>
               <div
                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                   currentRec.type === 'warning'
