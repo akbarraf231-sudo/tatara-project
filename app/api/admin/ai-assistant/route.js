@@ -236,8 +236,8 @@ Coba tanya salah satu topik di atas!
 }
 
 function isApiKeyConfigured() {
-  const key = process.env.ANTHROPIC_API_KEY;
-  return key && key.startsWith('sk-ant-') && key.length > 20;
+  const key = process.env.GEMINI_API_KEY;
+  return key && key.length > 10;
 }
 
 export async function POST(request) {
@@ -261,35 +261,35 @@ export async function POST(request) {
     if (!isApiKeyConfigured()) {
       const fallbackText = getFallbackResponse(message);
       return new Response(fallbackText, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-        },
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       });
     }
 
-    const messages = [
-      ...conversationHistory,
-      { role: 'user', content: message },
+    // Map conversation history to Gemini format
+    const contents = [
+      ...conversationHistory.map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      })),
+      { role: 'user', parts: [{ text: message }] },
     ];
 
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: messages,
-      }),
-    });
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1024 },
+        }),
+      }
+    );
 
-    if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      let errMsg = `Anthropic API error ${anthropicRes.status}`;
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      let errMsg = `Gemini API error ${geminiRes.status}`;
       try {
         const errJson = JSON.parse(errText);
         errMsg = errJson.error?.message || errMsg;
@@ -300,8 +300,8 @@ export async function POST(request) {
       );
     }
 
-    const data = await anthropicRes.json();
-    const text = data.content?.[0]?.text || 'No response';
+    const data = await geminiRes.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
 
     return new Response(text, {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
@@ -309,9 +309,7 @@ export async function POST(request) {
   } catch (err) {
     console.error('AI Assistant error:', err);
     return new Response(
-      JSON.stringify({
-        error: err instanceof Error ? err.message : 'Internal error',
-      }),
+      JSON.stringify({ error: err instanceof Error ? err.message : 'Internal error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
