@@ -61,9 +61,28 @@ export async function DELETE(request, { params }) {
   }
   try {
     const { id } = await params;
+
+    // Check if product has order history
+    const { data: orderItems } = await supabaseServer
+      .from('order_items')
+      .select('id')
+      .eq('product_id', id)
+      .limit(1);
+
+    if (orderItems && orderItems.length > 0) {
+      // Has order history — soft delete (deactivate) instead
+      const { error } = await supabaseServer
+        .from('products')
+        .update({ is_active: false, updated_at: new Date() })
+        .eq('id', id);
+      if (error) throw error;
+      return NextResponse.json({ success: true, softDeleted: true });
+    }
+
+    // No order history — safe to hard delete
     const { error } = await supabaseServer.from('products').delete().eq('id', id);
     if (error) throw error;
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, softDeleted: false });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

@@ -154,7 +154,11 @@ export function AdminProducts() {
         method: 'DELETE',
         headers: { 'x-admin-token': token },
       });
-      if (!res.ok) throw new Error('Failed to delete product');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal hapus produk');
+      if (data.softDeleted) {
+        alert('Produk ini punya riwayat order sehingga tidak bisa dihapus permanen.\nProduk sudah dinonaktifkan — tidak akan muncul ke customer.');
+      }
       await fetchProducts();
     } catch (err) {
       alert(err.message);
