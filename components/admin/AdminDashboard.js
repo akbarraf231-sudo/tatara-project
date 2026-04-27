@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import { AdminAIChat } from './AdminAIChat';
 import { AdminInsights } from './AdminInsights';
+import { AdminInventory } from './AdminInventory';
+import { AdminOnboarding } from './AdminOnboarding';
 
 export function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState('insights');
   const [stats, setStats] = useState({
     totalIncome: 0,
     todayIncome: 0,
@@ -106,11 +109,55 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Dashboard</h2>
+      <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Admin Dashboard</h2>
 
-      <AdminInsights />
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b-2 border-[#e3b9b9] overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('insights')}
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-4 whitespace-nowrap ${
+            activeTab === 'insights'
+              ? 'border-[#5a1f2a] text-[#5a1f2a]'
+              : 'border-transparent text-[#722f37] hover:text-[#5a1f2a]'
+          }`}
+        >
+          📊 Insights
+        </button>
+        <button
+          onClick={() => setActiveTab('inventory')}
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-4 whitespace-nowrap ${
+            activeTab === 'inventory'
+              ? 'border-[#5a1f2a] text-[#5a1f2a]'
+              : 'border-transparent text-[#722f37] hover:text-[#5a1f2a]'
+          }`}
+        >
+          📦 Inventory
+        </button>
+        <button
+          onClick={() => setActiveTab('onboarding')}
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-4 whitespace-nowrap ${
+            activeTab === 'onboarding'
+              ? 'border-[#5a1f2a] text-[#5a1f2a]'
+              : 'border-transparent text-[#722f37] hover:text-[#5a1f2a]'
+          }`}
+        >
+          🎓 Onboarding
+        </button>
+      </div>
 
-      <hr className="my-8 border-[#e3b9b9]" />
+      {/* Insights Tab */}
+      {activeTab === 'insights' && <AdminInsights />}
+
+      {/* Inventory Tab */}
+      {activeTab === 'inventory' && <AdminInventory />}
+
+      {/* Onboarding Tab */}
+      {activeTab === 'onboarding' && <AdminOnboarding />}
+
+      {/* Quick Stats Section */}
+      {activeTab === 'insights' && (
+        <>
+          <hr className="my-8 border-[#e3b9b9]" />
 
       {error && <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">{error}</div>}
 
@@ -211,6 +258,9 @@ export function AdminDashboard() {
           </div>
         )}
       </div>
+
+        </>
+      )}
 
       {/* AI Assistant */}
       <AdminAIChat />
