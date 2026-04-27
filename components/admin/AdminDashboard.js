@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AdminAIChat } from './AdminAIChat';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -205,6 +206,9 @@ export function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant */}
+      <AdminAIChat />
     </div>
   );
 }
