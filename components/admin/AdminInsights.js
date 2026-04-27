@@ -185,7 +185,7 @@ export function AdminInsights() {
             <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
               <div className="text-4xl mb-3">{currentRec.icon}</div>
               <h4 className="text-xl font-bold mb-2">{currentRec.title}</h4>
-              <p className="text-sm opacity-90 mb-4">{currentRec.message}</p>
+              <p className="text-base mb-4">{currentRec.message}</p>
               <div
                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                   currentRec.type === 'warning'

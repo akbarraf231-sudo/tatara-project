@@ -209,7 +209,7 @@ export function Cart() {
               {hasSpecialItems ? (
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-3 space-y-2">
                   <p className="text-xs text-purple-800 font-semibold">
-                    🎂 Special Order — minimal H-{leadTime} hari
+                    🎂 Pesan Khusus — minimal H-{leadTime} hari
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -235,7 +235,7 @@ export function Cart() {
                 </div>
               ) : (
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3">
-                  <label className="block text-xs text-orange-800 font-semibold mb-2">☀️ Daily Order — Jam Pickup Hari Ini</label>
+                  <label className="block text-xs text-orange-800 font-semibold mb-2">☀️ Pesan Harian — Jam Pickup Hari Ini</label>
                   <input
                     type="time"
                     value={pickupTime}
@@ -267,7 +267,7 @@ export function Cart() {
                   />
                   {voucherInfo ? (
                     <button onClick={clearVoucher} className="bg-red-500 text-white px-4 py-2 rounded-full font-semibold text-sm">
-                      Clear
+                      Hapus
                     </button>
                   ) : (
                     <button
@@ -275,7 +275,7 @@ export function Cart() {
                       disabled={validatingVoucher}
                       className="bg-[#5a1f2a] text-white px-4 py-2 rounded-full font-semibold text-sm disabled:bg-gray-400"
                     >
-                      {validatingVoucher ? '...' : 'Apply'}
+                      {validatingVoucher ? '...' : 'Terapkan'}
                     </button>
                   )}
                 </div>

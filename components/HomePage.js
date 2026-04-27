@@ -47,19 +47,19 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
                   onClick={() => scrollToSection('daily')}
                   className="bg-[#5a1f2a] hover:bg-[#722f37] text-white font-semibold py-3 px-6 sm:px-8 rounded-full transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
                 >
-                  ☀️ Daily Order
+                  ☀️ Pesan Harian
                 </button>
                 <button
                   onClick={() => scrollToSection('special')}
                   className="bg-transparent border-2 border-[#5a1f2a] text-[#5a1f2a] hover:bg-[#5a1f2a] hover:text-white font-semibold py-3 px-6 sm:px-8 rounded-full transition-all text-sm sm:text-base"
                 >
-                  🎂 Special Order
+                  🎂 Pesan Khusus
                 </button>
               </div>
 
               {content.ingredients?.length > 0 && (
                 <div>
-                  <p className="text-[#5a1f2a] font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Ingredients :</p>
+                  <p className="text-[#5a1f2a] font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Bahan-bahan :</p>
                   <div className="flex gap-3 sm:gap-4 items-center flex-wrap">
                     {content.ingredients.slice(0, 6).map((ing, i) => (
                       <div key={i} className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-white shadow-md overflow-hidden" title={ing.name}>
@@ -118,8 +118,8 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <span className="text-2xl sm:text-3xl">☀️</span>
             <div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-[#5a1f2a]">Daily Fresh</h3>
-              <p className="text-xs sm:text-sm text-[#722f37]">Order pagi, pickup hari ini juga!</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#5a1f2a]">Produk Harian</h3>
+              <p className="text-xs sm:text-sm text-[#722f37]">Pesan pagi, ambil hari ini juga!</p>
             </div>
           </div>
 
@@ -140,8 +140,8 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <span className="text-2xl sm:text-3xl">🎂</span>
             <div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-[#5a1f2a]">Special Order</h3>
-              <p className="text-xs sm:text-sm text-[#722f37]">Custom cake & special creations — pre-order required</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#5a1f2a]">Pesan Khusus</h3>
+              <p className="text-xs sm:text-sm text-[#722f37]">Kue custom & kreasi spesial — butuh pre-order</p>
             </div>
           </div>
 
@@ -188,53 +188,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
         </div>
       </section>
 
-      {/* TESTIMONIALS — Grab/Gofood style */}
-      <section className="py-12 sm:py-20 px-0 bg-[#e3b9b9] overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="px-4 mb-6 sm:mb-10 text-center">
-            <h2 className="text-3xl sm:text-5xl font-bold text-[#5a1f2a] mb-2">⭐ Apa Kata Mereka</h2>
-            <p className="text-sm sm:text-base text-[#722f37]">Review jujur dari pelanggan setia Sinar Jaya</p>
-          </div>
-
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 snap-x snap-mandatory scrollbar-hide">
-            {content.testimonials.map((t, i) => {
-              const initial = (t.name || '?').trim().charAt(0).toUpperCase();
-              const colors = ['bg-orange-400', 'bg-pink-400', 'bg-purple-400', 'bg-blue-400', 'bg-green-400', 'bg-red-400'];
-              const avatarColor = colors[i % colors.length];
-              const rating = t.rating || 5;
-              return (
-                <div
-                  key={i}
-                  className="snap-start shrink-0 w-72 sm:w-80 bg-white rounded-2xl p-4 sm:p-5 shadow-md flex flex-col"
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full ${avatarColor} text-white flex items-center justify-center font-bold text-lg shrink-0`}>
-                      {initial}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-[#5a1f2a] text-sm sm:text-base truncate">{t.name}</p>
-                      <div className="flex items-center gap-1">
-                        {Array(rating).fill(0).map((_, j) => (
-                          <span key={j} className="text-yellow-400 text-sm">⭐</span>
-                        ))}
-                        <span className="text-xs text-[#722f37] ml-1">({rating}.0)</span>
-                      </div>
-                    </div>
-                    <span className="text-xl sm:text-2xl">💬</span>
-                  </div>
-                  <p className="text-[#722f37] text-sm leading-relaxed flex-1">&quot;{t.review}&quot;</p>
-                  <div className="mt-3 pt-3 border-t border-[#fce8e2] flex items-center gap-2 text-xs text-[#c89292]">
-                    <span>✓ Verified Customer</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-center text-xs text-[#722f37] mt-2 px-4">← Geser untuk lihat lebih banyak →</p>
-        </div>
-      </section>
-
-      {/* CONTACT */}
+{/* CONTACT */}
       <section id="contact" className="py-12 sm:py-20 px-4 bg-[#fce8e2]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-5xl font-bold text-[#5a1f2a] mb-4 sm:mb-6">{content.contact_title}</h2>
@@ -246,7 +200,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
               rel="noopener noreferrer"
               className="inline-block bg-[#5a1f2a] hover:bg-[#722f37] text-white font-semibold py-3 sm:py-4 px-8 sm:px-10 rounded-full transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
             >
-              📍 View Location
+              📍 Lihat Lokasi
             </a>
           )}
         </div>
@@ -256,16 +210,16 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
       <footer className="bg-[#5a1f2a] text-[#fce8e2] py-12 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h3 className="text-3xl font-bold mb-2">Sinar Jaya Bakery</h3>
-          <p className="text-[#e3b9b9] mb-6">Freshly baked goodness, delivered with love</p>
+          <p className="text-[#e3b9b9] mb-6">Kue segar dibuat dengan penuh kasih sayang</p>
           <div className="flex justify-center gap-6 text-sm flex-wrap">
-            <a href="#home" className="hover:text-white transition-colors">Home</a>
-            <a href="#daily" className="hover:text-white transition-colors">Daily</a>
-            <a href="#special" className="hover:text-white transition-colors">Special</a>
-            <a href="#cart" className="hover:text-white transition-colors">Order</a>
-            <a href="#about" className="hover:text-white transition-colors">About</a>
-            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+            <a href="#home" className="hover:text-white transition-colors">Beranda</a>
+            <a href="#daily" className="hover:text-white transition-colors">Harian</a>
+            <a href="#special" className="hover:text-white transition-colors">Khusus</a>
+            <a href="#cart" className="hover:text-white transition-colors">Pesan</a>
+            <a href="#about" className="hover:text-white transition-colors">Tentang</a>
+            <a href="#contact" className="hover:text-white transition-colors">Hubungi</a>
           </div>
-          <p className="mt-8 text-xs text-[#c89292]">© 2026 Sinar Jaya Bakery. All rights reserved.</p>
+          <p className="mt-8 text-xs text-[#c89292]">© 2026 Sinar Jaya Bakery. Semua hak dilindungi.</p>
         </div>
       </footer>
     </main>

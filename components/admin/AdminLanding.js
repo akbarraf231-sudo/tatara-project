@@ -66,17 +66,6 @@ export function AdminLanding() {
     setContent({ ...content, [key]: value });
   }
 
-  function addTestimonial() {
-    update('testimonials', [...content.testimonials, { name: '', review: '', rating: 5 }]);
-  }
-  function removeTestimonial(idx) {
-    update('testimonials', content.testimonials.filter((_, i) => i !== idx));
-  }
-  function updateTestimonial(idx, key, val) {
-    const next = [...content.testimonials];
-    next[idx] = { ...next[idx], [key]: val };
-    update('testimonials', next);
-  }
 
   function addIngredient() {
     update('ingredients', [...content.ingredients, { name: '', image_url: '' }]);
@@ -164,24 +153,7 @@ export function AdminLanding() {
         </div>
       </Section>
 
-      {/* TESTIMONIALS */}
-      <Section title="💬 What Customers Say">
-        <div className="space-y-3">
-          {content.testimonials.map((t, i) => (
-            <div key={i} className="p-3 bg-[#fce8e2] rounded-lg space-y-2">
-              <div className="flex gap-2">
-                <input type="text" placeholder="Nama" value={t.name} onChange={(e) => updateTestimonial(i, 'name', e.target.value)} className={`${inputCls} flex-1`} />
-                <input type="number" min="1" max="5" placeholder="Rating" value={t.rating} onChange={(e) => updateTestimonial(i, 'rating', parseInt(e.target.value) || 5)} className={`${inputCls} w-24`} />
-                <button onClick={() => removeTestimonial(i)} className="bg-red-500 text-white px-3 rounded-lg font-bold">×</button>
-              </div>
-              <textarea placeholder="Review" value={t.review} onChange={(e) => updateTestimonial(i, 'review', e.target.value)} rows={2} className={inputCls} />
-            </div>
-          ))}
-          <button onClick={addTestimonial} className="bg-[#5a1f2a] text-white py-2 px-4 rounded-lg font-semibold">+ Add Testimonial</button>
-        </div>
-      </Section>
-
-      {/* CONTACT */}
+{/* CONTACT */}
       <Section title="📍 Contact / Visit Us">
         <Field label="Title"><input type="text" value={content.contact_title} onChange={(e) => update('contact_title', e.target.value)} className={inputCls} /></Field>
         <Field label="Text"><textarea value={content.contact_text} onChange={(e) => update('contact_text', e.target.value)} rows={3} className={inputCls} /></Field>

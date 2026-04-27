@@ -89,12 +89,12 @@ export function Navbar({ initialLogoUrl = '' }) {
           </button>
 
           <div className="hidden md:flex gap-6 lg:gap-8 text-[#5a1f2a] font-medium">
-            <button onClick={() => scrollTo('home')} className="hover:text-[#c89292] transition-colors">Home</button>
-            <button onClick={() => scrollTo('daily')} className="hover:text-[#c89292] transition-colors">Daily</button>
-            <button onClick={() => scrollTo('special')} className="hover:text-[#c89292] transition-colors">Special</button>
-            <button onClick={() => scrollTo('cart')} className="hover:text-[#c89292] transition-colors">Order</button>
-            <button onClick={() => scrollTo('about')} className="hover:text-[#c89292] transition-colors">About</button>
-            <button onClick={() => scrollTo('contact')} className="hover:text-[#c89292] transition-colors">Contact</button>
+            <button onClick={() => scrollTo('home')} className="hover:text-[#c89292] transition-colors">Beranda</button>
+            <button onClick={() => scrollTo('daily')} className="hover:text-[#c89292] transition-colors">Harian</button>
+            <button onClick={() => scrollTo('special')} className="hover:text-[#c89292] transition-colors">Khusus</button>
+            <button onClick={() => scrollTo('cart')} className="hover:text-[#c89292] transition-colors">Pesan</button>
+            <button onClick={() => scrollTo('about')} className="hover:text-[#c89292] transition-colors">Tentang</button>
+            <button onClick={() => scrollTo('contact')} className="hover:text-[#c89292] transition-colors">Hubungi</button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -135,12 +135,12 @@ export function Navbar({ initialLogoUrl = '' }) {
         {mobileMenuOpen && (
           <div className="md:hidden border-t-2 border-[#e3b9b9] bg-[#fce8e2]">
             <div className="flex flex-col py-2">
-              <button onClick={() => scrollTo('home')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🏠 Home</button>
-              <button onClick={() => scrollTo('daily')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">☀️ Daily</button>
-              <button onClick={() => scrollTo('special')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🎂 Special</button>
-              <button onClick={() => scrollTo('cart')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🛒 Order</button>
-              <button onClick={() => scrollTo('about')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">ℹ️ About</button>
-              <button onClick={() => scrollTo('contact')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">📍 Contact</button>
+              <button onClick={() => scrollTo('home')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🏠 Beranda</button>
+              <button onClick={() => scrollTo('daily')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">☀️ Harian</button>
+              <button onClick={() => scrollTo('special')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🎂 Khusus</button>
+              <button onClick={() => scrollTo('cart')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🛒 Pesan</button>
+              <button onClick={() => scrollTo('about')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">ℹ️ Tentang</button>
+              <button onClick={() => scrollTo('contact')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">📍 Hubungi</button>
             </div>
           </div>
         )}

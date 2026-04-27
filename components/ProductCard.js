@@ -96,7 +96,7 @@ function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
             Batal
           </button>
           <button onClick={handleConfirm} className="flex-1 bg-[#5a1f2a] text-white py-3 rounded-full font-semibold text-sm">
-            + Add to Cart
+            + Ke Keranjang
           </button>
         </div>
       </div>
@@ -142,7 +142,7 @@ export function ProductCard({ product }) {
       <div className="bg-[#e3b9b9] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-shadow relative">
         {isSpecial && (
           <div className="absolute top-3 left-3 z-10 bg-purple-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow">
-            🎂 SPECIAL
+            🎂 KHUSUS
           </div>
         )}
         <div className="relative bg-[#fce8e2] p-3 sm:p-4 pt-6">
@@ -183,7 +183,7 @@ export function ProductCard({ product }) {
                 : 'bg-[#5a1f2a] hover:bg-[#722f37] text-white'
             }`}
           >
-            {!inStock ? 'Habis' : added ? '✓ Added!' : hasVariants ? '+ Pilih Varian' : '+ Add to Cart'}
+            {!inStock ? 'Habis' : added ? '✓ Ditambahkan!' : hasVariants ? '+ Pilih Varian' : '+ Ke Keranjang'}
           </button>
         </div>
       </div>
