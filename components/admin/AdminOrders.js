@@ -27,17 +27,19 @@ export function AdminOrders() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [showArchived]);
 
   async function fetchOrders() {
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/admin/orders', {
+      const query = showArchived ? '?includeArchived=true' : '';
+      const res = await fetch(`/api/admin/orders${query}`, {
         headers: { 'x-admin-token': token },
       });
       const result = await res.json();
@@ -80,6 +82,34 @@ export function AdminOrders() {
     }
   }
 
+  async function archiveOrder(orderId) {
+    if (!confirm('Archive order ini? Ordernya tetap ada tapi tersembunyi dari list utama.')) {
+      return;
+    }
+    setUpdatingStatus(orderId);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': token,
+        },
+        body: JSON.stringify({ action: 'archive' }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to archive order');
+      }
+
+      await fetchOrders();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  }
+
   const getStatusColor = (status) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -112,21 +142,34 @@ export function AdminOrders() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl sm:text-2xl font-bold text-[#5a1f2a]">📦 Orders ({orders.length})</h2>
-        <div className="flex gap-2 flex-wrap">
-          {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
-                filterStatus === s
-                  ? 'bg-[#5a1f2a] text-white'
-                  : 'bg-[#fce8e2] text-[#5a1f2a] hover:bg-[#e3b9b9]'
-              }`}
-            >
-              {s === 'all' ? 'All' : `${getStatusIcon(s)} ${s}`}
-            </button>
-          ))}
+        <div className="flex gap-2 flex-wrap items-center">
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+              showArchived
+                ? 'bg-purple-600 text-white'
+                : 'bg-[#fce8e2] text-[#5a1f2a] hover:bg-[#e3b9b9]'
+            }`}
+          >
+            {showArchived ? '📁 Tampilkan Aktif' : '📦 Lihat Archived'}
+          </button>
         </div>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilterStatus(s)}
+            className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+              filterStatus === s
+                ? 'bg-[#5a1f2a] text-white'
+                : 'bg-[#fce8e2] text-[#5a1f2a] hover:bg-[#e3b9b9]'
+            }`}
+          >
+            {s === 'all' ? 'Semua' : `${getStatusIcon(s)} ${s}`}
+          </button>
+        ))}
       </div>
 
       {error && (
@@ -311,6 +354,17 @@ export function AdminOrders() {
                           </button>
                         </div>
                       </div>
+                    )}
+
+                    {/* Archive Button - show for all completed/cancelled orders */}
+                    {(order.status === 'completed' || order.status === 'cancelled') && !order.archived_at && (
+                      <button
+                        onClick={() => archiveOrder(order.id)}
+                        disabled={updatingStatus === order.id}
+                        className="w-full px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded font-semibold text-xs sm:text-sm transition-colors"
+                      >
+                        📦 Archive Order
+                      </button>
                     )}
 
                     {order.expires_at && order.status === 'pending' && (

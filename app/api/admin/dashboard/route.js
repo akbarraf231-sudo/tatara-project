@@ -9,7 +9,8 @@ export async function GET(request) {
   try {
     const { data: orders, error: ordersErr } = await supabaseServer
       .from('orders')
-      .select('id, total, status, created_at, order_type');
+      .select('id, total, status, created_at, order_type')
+      .is('archived_at', null);
     if (ordersErr) throw ordersErr;
 
     const { data: items, error: itemsErr } = await supabaseServer
@@ -18,8 +19,9 @@ export async function GET(request) {
         qty,
         price,
         products (name),
-        orders!inner (status)
-      `);
+        orders!inner (status, archived_at)
+      `)
+      .is('orders.archived_at', null);
     if (itemsErr) throw itemsErr;
 
     const { data: expenses, error: expErr } = await supabaseServer

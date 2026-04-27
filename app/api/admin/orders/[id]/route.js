@@ -18,8 +18,35 @@ export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, action } = body;
 
+    // Handle archive action
+    if (action === 'archive') {
+      const { data, error } = await supabaseServer
+        .from('orders')
+        .update({ archived_at: new Date().toISOString(), updated_at: new Date() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
+    }
+
+    // Handle unarchive action
+    if (action === 'unarchive') {
+      const { data, error } = await supabaseServer
+        .from('orders')
+        .update({ archived_at: null, updated_at: new Date() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
+    }
+
+    // Handle status update
     const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(

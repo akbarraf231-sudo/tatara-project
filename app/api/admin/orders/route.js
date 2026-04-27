@@ -16,7 +16,10 @@ export async function GET(request) {
   }
 
   try {
-    const { data, error } = await supabaseServer
+    const { searchParams } = new URL(request.url);
+    const includeArchived = searchParams.get('includeArchived') === 'true';
+
+    let query = supabaseServer
       .from('orders')
       .select(`
         *,
@@ -29,6 +32,13 @@ export async function GET(request) {
         )
       `)
       .order('created_at', { ascending: false });
+
+    // Filter out archived orders unless explicitly requested
+    if (!includeArchived) {
+      query = query.is('archived_at', null);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
