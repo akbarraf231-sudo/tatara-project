@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AdminAIChat } from './AdminAIChat';
+import { AdminInsights } from './AdminInsights';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -106,6 +107,10 @@ export function AdminDashboard() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Dashboard</h2>
+
+      <AdminInsights />
+
+      <hr className="my-8 border-[#e3b9b9]" />
 
       {error && <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">{error}</div>}
 
