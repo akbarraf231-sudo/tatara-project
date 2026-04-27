@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AdminAIChat } from './AdminAIChat';
 import { AdminInsights } from './AdminInsights';
 import { AdminInventory } from './AdminInventory';
 import { AdminOnboarding } from './AdminOnboarding';
@@ -262,8 +261,6 @@ export function AdminDashboard() {
         </>
       )}
 
-      {/* AI Assistant */}
-      <AdminAIChat />
     </div>
   );
 }
