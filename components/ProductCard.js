@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '@/lib/cartContext';
 
-function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
-  const [selectedFlavor, setSelectedFlavor] = useState('');
+function VariantModal({ product, flavors, sizes, maxFlavors, onClose, onConfirm }) {
+  const [selectedFlavors, setSelectedFlavors] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
   const [mounted, setMounted] = useState(false);
 
@@ -18,8 +18,19 @@ function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
 
   if (!mounted) return null;
 
+  function toggleFlavor(f) {
+    setSelectedFlavors((prev) => {
+      if (prev.includes(f)) return prev.filter((x) => x !== f);
+      if (prev.length >= maxFlavors) {
+        if (maxFlavors === 1) return [f];
+        return prev;
+      }
+      return [...prev, f];
+    });
+  }
+
   function handleConfirm() {
-    if (flavors.length > 0 && !selectedFlavor) {
+    if (flavors.length > 0 && selectedFlavors.length === 0) {
       alert('Pilih varian rasa dulu');
       return;
     }
@@ -27,7 +38,7 @@ function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
       alert('Pilih ukuran dulu');
       return;
     }
-    onConfirm({ flavor: selectedFlavor, size: selectedSize });
+    onConfirm({ flavor: selectedFlavors.join(', '), size: selectedSize });
   }
 
   return createPortal(
@@ -46,22 +57,37 @@ function VariantModal({ product, flavors, sizes, onClose, onConfirm }) {
 
         {flavors.length > 0 && (
           <div className="mb-4">
-            <p className="font-semibold mb-2 text-sm">Pilih Rasa:</p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-semibold text-sm">Pilih Rasa:</p>
+              <span className="text-xs bg-[#fce8e2] text-[#5a1f2a] px-2 py-0.5 rounded-full font-bold">
+                {selectedFlavors.length} / {maxFlavors}
+              </span>
+            </div>
+            <p className="text-xs text-[#722f37] mb-2">
+              {maxFlavors > 1 ? `Pilih maksimal ${maxFlavors} rasa` : 'Pilih 1 rasa'}
+            </p>
             <div className="flex flex-wrap gap-2">
-              {flavors.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setSelectedFlavor(selectedFlavor === f ? '' : f)}
-                  className={`px-3 py-2 rounded-full text-sm border-2 transition-colors ${
-                    selectedFlavor === f
-                      ? 'bg-[#5a1f2a] text-white border-[#5a1f2a]'
-                      : 'bg-white text-[#5a1f2a] border-[#e3b9b9]'
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
+              {flavors.map((f) => {
+                const isSelected = selectedFlavors.includes(f);
+                const isDisabled = !isSelected && selectedFlavors.length >= maxFlavors && maxFlavors > 1;
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => toggleFlavor(f)}
+                    disabled={isDisabled}
+                    className={`px-3 py-2 rounded-full text-sm border-2 transition-colors ${
+                      isSelected
+                        ? 'bg-[#5a1f2a] text-white border-[#5a1f2a]'
+                        : isDisabled
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-white text-[#5a1f2a] border-[#e3b9b9]'
+                    }`}
+                  >
+                    {isSelected && '✓ '}{f}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -110,11 +136,13 @@ export function ProductCard({ product }) {
   const [favorite, setFavorite] = useState(false);
   const [added, setAdded] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
   const inStock = product.stock > 0;
   const isSpecial = (product.product_type || 'daily') === 'special';
   const flavors = Array.isArray(product.flavors) ? product.flavors : [];
   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
   const hasVariants = flavors.length > 0 || sizes.length > 0;
+  const productImages = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
 
   function commitAdd(opts = {}) {
     if (!inStock) return;
@@ -154,9 +182,28 @@ export function ProductCard({ product }) {
             {favorite ? <span className="text-red-500 text-lg">♥</span> : <span className="text-[#c89292] text-lg">♡</span>}
           </button>
 
-          <div className="w-full h-40 sm:h-48 flex items-center justify-center overflow-hidden">
-            {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-2xl" />
+          <div className="relative w-full h-40 sm:h-48 flex items-center justify-center overflow-hidden">
+            {productImages.length > 0 ? (
+              <>
+                <img src={productImages[activeImg]} alt={product.name} className="w-full h-full object-cover rounded-2xl" />
+                {productImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setActiveImg((p) => (p - 1 + productImages.length) % productImages.length); }}
+                      className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 text-[#5a1f2a] w-7 h-7 rounded-full font-bold shadow"
+                    >‹</button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setActiveImg((p) => (p + 1) % productImages.length); }}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 text-[#5a1f2a] w-7 h-7 rounded-full font-bold shadow"
+                    >›</button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {productImages.map((_, i) => (
+                        <span key={i} className={`h-1.5 rounded-full transition-all ${i === activeImg ? 'bg-white w-4' : 'bg-white/50 w-1.5'}`} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <div className="text-6xl sm:text-7xl">{isSpecial ? '🎂' : '🍰'}</div>
             )}
@@ -193,6 +240,7 @@ export function ProductCard({ product }) {
           product={product}
           flavors={flavors}
           sizes={sizes}
+          maxFlavors={product.max_flavors_selectable || 1}
           onClose={() => setShowOptions(false)}
           onConfirm={(opts) => commitAdd(opts)}
         />

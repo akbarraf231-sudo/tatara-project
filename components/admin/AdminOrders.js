@@ -110,6 +110,32 @@ export function AdminOrders() {
     }
   }
 
+  async function deleteAllArchived() {
+    const archivedOrders = orders.filter((o) => o.archived_at);
+    if (archivedOrders.length === 0) {
+      alert('Tidak ada order archived untuk dihapus');
+      return;
+    }
+    if (!confirm(`Hapus SEMUA ${archivedOrders.length} order archived secara permanen? Aksi ini TIDAK bisa dibatalkan!`)) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('adminToken');
+      let deletedCount = 0;
+      for (const order of archivedOrders) {
+        const res = await fetch(`/api/admin/orders/${order.id}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-token': token },
+        });
+        if (res.ok) deletedCount++;
+      }
+      alert(`Berhasil menghapus ${deletedCount} dari ${archivedOrders.length} order`);
+      await fetchOrders();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
   async function deleteOrder(orderId) {
     if (!confirm('Hapus order ini? Aksi ini TIDAK bisa dibatalkan!')) {
       return;
@@ -167,6 +193,14 @@ export function AdminOrders() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl sm:text-2xl font-bold text-[#5a1f2a]">📦 Orders ({orders.length})</h2>
         <div className="flex gap-2 flex-wrap items-center">
+          {showArchived && orders.some((o) => o.archived_at) && (
+            <button
+              onClick={deleteAllArchived}
+              className="px-3 py-1 rounded-lg text-xs sm:text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
+            >
+              🗑️ Hapus Semua Dummy Archived
+            </button>
+          )}
           <button
             onClick={() => setShowArchived(!showArchived)}
             className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
@@ -380,7 +414,7 @@ export function AdminOrders() {
                       </div>
                     )}
 
-                    {/* Archive Button - show for all completed/cancelled orders */}
+                    {/* Archive Button - show for all completed/cancelled orders that are NOT yet archived */}
                     {(order.status === 'completed' || order.status === 'cancelled') && !order.archived_at && (
                       <div className="flex gap-2">
                         <button
@@ -399,6 +433,19 @@ export function AdminOrders() {
                             🗑️ Hapus
                           </button>
                         )}
+                      </div>
+                    )}
+
+                    {/* Delete button for archived orders - to clean up dummy data */}
+                    {order.archived_at && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => deleteOrder(order.id)}
+                          disabled={updatingStatus === order.id}
+                          className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded font-semibold text-xs sm:text-sm transition-colors"
+                        >
+                          🗑️ Hapus Permanen
+                        </button>
                       </div>
                     )}
 

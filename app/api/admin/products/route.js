@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
-const optionalCols = ['image_url', 'product_type', 'description', 'flavors', 'sizes'];
+const optionalCols = ['image_url', 'image_url_2', 'image_url_3', 'product_type', 'description', 'flavors', 'sizes', 'max_flavors_selectable'];
 
 export async function GET(request) {
   if (!isAdminAuthorized(request)) {
@@ -27,8 +27,8 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const {
-      name, price, stock, is_active, image_url,
-      product_type, description, flavors, sizes,
+      name, price, stock, is_active, image_url, image_url_2, image_url_3,
+      product_type, description, flavors, sizes, max_flavors_selectable,
     } = body;
 
     if (!name || price == null || stock == null) {
@@ -47,8 +47,11 @@ export async function POST(request) {
       description: description || null,
       flavors: Array.isArray(flavors) ? flavors : [],
       sizes: Array.isArray(sizes) ? sizes : [],
+      max_flavors_selectable: parseInt(max_flavors_selectable) || 1,
     };
     if (image_url) insertData.image_url = image_url;
+    if (image_url_2) insertData.image_url_2 = image_url_2;
+    if (image_url_3) insertData.image_url_3 = image_url_3;
 
     let { data, error } = await supabaseServer
       .from('products')

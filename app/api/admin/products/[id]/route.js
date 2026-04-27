@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
-const optionalCols = ['image_url', 'product_type', 'description', 'flavors', 'sizes'];
+const optionalCols = ['image_url', 'image_url_2', 'image_url_3', 'product_type', 'description', 'flavors', 'sizes', 'max_flavors_selectable'];
 
 async function tryUpdate(id, payload) {
   let { data, error } = await supabaseServer
@@ -42,10 +42,13 @@ export async function PATCH(request, { params }) {
     if (body.stock !== undefined) updateData.stock = parseInt(body.stock);
     if (body.is_active !== undefined) updateData.is_active = body.is_active;
     if (body.image_url !== undefined) updateData.image_url = body.image_url || null;
+    if (body.image_url_2 !== undefined) updateData.image_url_2 = body.image_url_2 || null;
+    if (body.image_url_3 !== undefined) updateData.image_url_3 = body.image_url_3 || null;
     if (body.product_type !== undefined) updateData.product_type = body.product_type === 'special' ? 'special' : 'daily';
     if (body.description !== undefined) updateData.description = body.description || null;
     if (body.flavors !== undefined) updateData.flavors = Array.isArray(body.flavors) ? body.flavors : [];
     if (body.sizes !== undefined) updateData.sizes = Array.isArray(body.sizes) ? body.sizes : [];
+    if (body.max_flavors_selectable !== undefined) updateData.max_flavors_selectable = parseInt(body.max_flavors_selectable) || 1;
 
     const { data, error } = await tryUpdate(id, updateData);
     if (error) throw error;

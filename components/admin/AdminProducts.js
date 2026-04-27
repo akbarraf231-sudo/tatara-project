@@ -8,11 +8,14 @@ const EMPTY_FORM = {
   price: '',
   stock: '',
   image_url: '',
+  image_url_2: '',
+  image_url_3: '',
   is_active: true,
   product_type: 'daily',
   description: '',
   flavors: [],
   sizes: [],
+  max_flavors_selectable: 1,
 };
 
 export function AdminProducts() {
@@ -58,11 +61,14 @@ export function AdminProducts() {
       price: product.price.toString(),
       stock: product.stock.toString(),
       image_url: product.image_url || '',
+      image_url_2: product.image_url_2 || '',
+      image_url_3: product.image_url_3 || '',
       is_active: product.is_active,
       product_type: product.product_type || 'daily',
       description: product.description || '',
       flavors: Array.isArray(product.flavors) ? product.flavors : [],
       sizes: Array.isArray(product.sizes) ? product.sizes : [],
+      max_flavors_selectable: product.max_flavors_selectable || 1,
     });
     setShowForm(true);
   }
@@ -112,11 +118,14 @@ export function AdminProducts() {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         image_url: formData.image_url || null,
+        image_url_2: formData.image_url_2 || null,
+        image_url_3: formData.image_url_3 || null,
         is_active: formData.is_active,
         product_type: formData.product_type,
         description: formData.description,
         flavors: formData.flavors,
         sizes: formData.sizes,
+        max_flavors_selectable: parseInt(formData.max_flavors_selectable) || 1,
       };
       const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
       const method = editingId ? 'PATCH' : 'POST';
@@ -305,7 +314,7 @@ export function AdminProducts() {
                   + Add
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-3">
                 {formData.flavors.map((f, i) => (
                   <span key={i} className="bg-[#fce8e2] text-[#5a1f2a] px-3 py-1 rounded-full text-sm flex items-center gap-2">
                     {f}
@@ -313,6 +322,32 @@ export function AdminProducts() {
                   </span>
                 ))}
               </div>
+              {formData.flavors.length > 0 && (
+                <div className="bg-[#fce8e2] border-2 border-[#e3b9b9] rounded-lg p-3 mt-2">
+                  <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">
+                    🍫 Maksimal Pilihan Rasa per Order
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, max_flavors_selectable: n })}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                          formData.max_flavors_selectable === n
+                            ? 'bg-[#5a1f2a] text-white'
+                            : 'bg-white text-[#5a1f2a] border-2 border-[#e3b9b9]'
+                        }`}
+                      >
+                        {n} Rasa
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#722f37] mt-2">
+                    Pelanggan bisa pilih maksimal {formData.max_flavors_selectable} rasa per produk
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -347,11 +382,38 @@ export function AdminProducts() {
             </div>
 
             <div className="md:col-span-2">
-              <ImageUpload
-                label="Gambar Produk"
-                value={formData.image_url}
-                onChange={(url) => setFormData({ ...formData, image_url: url })}
-              />
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">
+                📸 Foto Produk (Maks. 3 - Shopee Style)
+              </label>
+              <p className="text-xs text-[#722f37] mb-3">
+                Upload sampai 3 foto. Foto pertama akan jadi foto utama yang tampil di card produk.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <p className="text-xs font-bold text-[#5a1f2a] mb-1">⭐ Foto Utama</p>
+                  <ImageUpload
+                    label=""
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#5a1f2a] mb-1">📷 Foto 2</p>
+                  <ImageUpload
+                    label=""
+                    value={formData.image_url_2}
+                    onChange={(url) => setFormData({ ...formData, image_url_2: url })}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#5a1f2a] mb-1">📷 Foto 3</p>
+                  <ImageUpload
+                    label=""
+                    value={formData.image_url_3}
+                    onChange={(url) => setFormData({ ...formData, image_url_3: url })}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
