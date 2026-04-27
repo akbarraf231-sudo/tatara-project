@@ -72,3 +72,39 @@ export async function PATCH(request, { params }) {
     );
   }
 }
+
+export async function DELETE(request, { params }) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const { id } = await params;
+
+    // Delete order items first (due to foreign key constraint)
+    const { error: itemsErr } = await supabaseServer
+      .from('order_items')
+      .delete()
+      .eq('order_id', id);
+
+    if (itemsErr) throw itemsErr;
+
+    // Then delete the order
+    const { error: orderErr } = await supabaseServer
+      .from('orders')
+      .delete()
+      .eq('id', id);
+
+    if (orderErr) throw orderErr;
+
+    return NextResponse.json({ success: true, message: 'Order deleted successfully' });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
+  }
+}

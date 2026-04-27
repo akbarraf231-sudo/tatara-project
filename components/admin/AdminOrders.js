@@ -110,6 +110,30 @@ export function AdminOrders() {
     }
   }
 
+  async function deleteOrder(orderId) {
+    if (!confirm('Hapus order ini? Aksi ini TIDAK bisa dibatalkan!')) {
+      return;
+    }
+    setUpdatingStatus(orderId);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': token },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete order');
+      }
+
+      await fetchOrders();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  }
+
   const getStatusColor = (status) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -358,13 +382,24 @@ export function AdminOrders() {
 
                     {/* Archive Button - show for all completed/cancelled orders */}
                     {(order.status === 'completed' || order.status === 'cancelled') && !order.archived_at && (
-                      <button
-                        onClick={() => archiveOrder(order.id)}
-                        disabled={updatingStatus === order.id}
-                        className="w-full px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded font-semibold text-xs sm:text-sm transition-colors"
-                      >
-                        📦 Archive Order
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => archiveOrder(order.id)}
+                          disabled={updatingStatus === order.id}
+                          className="flex-1 px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded font-semibold text-xs sm:text-sm transition-colors"
+                        >
+                          📦 Archive
+                        </button>
+                        {order.status === 'cancelled' && (
+                          <button
+                            onClick={() => deleteOrder(order.id)}
+                            disabled={updatingStatus === order.id}
+                            className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded font-semibold text-xs sm:text-sm transition-colors"
+                          >
+                            🗑️ Hapus
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     {order.expires_at && order.status === 'pending' && (
