@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export function FloatingWhatsApp({ initialWaNumber = '' }) {
   const [waNumber] = useState(initialWaNumber);
+  const pathname = usePathname();
 
   if (!waNumber) return null;
+  if (pathname?.startsWith('/admin')) return null;
 
   const cleaned = waNumber.replace(/\D/g, '');
   const message = encodeURIComponent('Halo Sinar Jaya Bakery, saya mau tanya...');
