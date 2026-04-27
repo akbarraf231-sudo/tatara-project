@@ -1,4 +1,3 @@
-import { Anthropic } from '@anthropic-ai/sdk';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
@@ -268,44 +267,44 @@ export async function POST(request) {
       });
     }
 
-    const client = new Anthropic();
     const messages = [
       ...conversationHistory,
       { role: 'user', content: message },
     ];
 
-    const stream = await client.messages.stream({
-      model: 'claude-opus-4-7',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: messages,
-    });
-
-    const encoder = new TextEncoder();
-    const customReadable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            if (
-              chunk.type === 'content_block_delta' &&
-              chunk.delta.type === 'text_delta'
-            ) {
-              const text = chunk.delta.text;
-              controller.enqueue(encoder.encode(text));
-            }
-          }
-          controller.close();
-        } catch (err) {
-          controller.error(err);
-        }
-      },
-    });
-
-    return new Response(customReadable, {
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
+        'content-type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
+      body: JSON.stringify({
+        model: 'claude-opus-4-7',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: messages,
+      }),
+    });
+
+    if (!anthropicRes.ok) {
+      const errText = await anthropicRes.text();
+      let errMsg = `Anthropic API error ${anthropicRes.status}`;
+      try {
+        const errJson = JSON.parse(errText);
+        errMsg = errJson.error?.message || errMsg;
+      } catch {}
+      return new Response(
+        JSON.stringify({ error: errMsg }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const data = await anthropicRes.json();
+    const text = data.content?.[0]?.text || 'No response';
+
+    return new Response(text, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch (err) {
     console.error('AI Assistant error:', err);
