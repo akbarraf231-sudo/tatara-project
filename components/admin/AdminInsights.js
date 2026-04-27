@@ -176,34 +176,52 @@ export function AdminInsights() {
 
       {/* Recommendations Carousel */}
       {insights.recommendations.length > 0 && (
-        <div className="bg-gradient-to-r from-[#5a1f2a] to-[#722f37] rounded-lg p-6 shadow-md text-white">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold">💡 Rekomendasi</h3>
-            <span className="text-xs opacity-75">{recommendationIndex + 1} / {insights.recommendations.length}</span>
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-bold text-[#5a1f2a]">💡 Rekomendasi</h3>
+            <span className="text-xs text-[#722f37] font-semibold">{recommendationIndex + 1} / {insights.recommendations.length}</span>
           </div>
           {currentRec && (
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <div className="text-5xl mb-4">{currentRec.icon}</div>
-              <h4 className="text-2xl font-bold mb-3 text-[#5a1f2a]">{currentRec.title}</h4>
-              <p className="text-lg font-semibold mb-4 leading-relaxed text-gray-900">{currentRec.message}</p>
-              <div
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+            <div className={`rounded-2xl p-5 shadow-md border-l-8 ${
+              currentRec.type === 'warning'
+                ? 'bg-yellow-50 border-yellow-400'
+                : currentRec.type === 'success'
+                ? 'bg-green-50 border-green-400'
+                : 'bg-blue-50 border-blue-400'
+            }`}>
+              <div className="flex items-start gap-4">
+                <div className={`text-5xl p-3 rounded-2xl ${
                   currentRec.type === 'warning'
-                    ? 'bg-yellow-300 text-yellow-900'
+                    ? 'bg-yellow-100'
                     : currentRec.type === 'success'
-                    ? 'bg-green-300 text-green-900'
-                    : 'bg-blue-300 text-blue-900'
-                }`}
-              >
-                {currentRec.type === 'warning' ? 'Perhatian' : currentRec.type === 'success' ? 'Bagus' : 'Info'}
+                    ? 'bg-green-100'
+                    : 'bg-blue-100'
+                }`}>
+                  {currentRec.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="text-xl font-bold text-gray-900">{currentRec.title}</h4>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      currentRec.type === 'warning'
+                        ? 'bg-yellow-200 text-yellow-800'
+                        : currentRec.type === 'success'
+                        ? 'bg-green-200 text-green-800'
+                        : 'bg-blue-200 text-blue-800'
+                    }`}>
+                      {currentRec.type === 'warning' ? '⚠️ Perhatian' : currentRec.type === 'success' ? '✅ Bagus' : 'ℹ️ Info'}
+                    </span>
+                  </div>
+                  <p className="text-base font-semibold text-gray-800 leading-relaxed">{currentRec.message}</p>
+                </div>
               </div>
             </div>
           )}
           {insights.recommendations.length > 1 && (
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-3">
               <button
                 onClick={prevRecommendation}
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-lg text-sm font-semibold transition-all"
+                className="bg-[#fce8e2] hover:bg-[#e3b9b9] text-[#5a1f2a] px-4 py-2 rounded-full text-sm font-semibold transition-all"
               >
                 ← Sebelumnya
               </button>
@@ -212,14 +230,14 @@ export function AdminInsights() {
                   <div
                     key={idx}
                     className={`h-2 rounded-full transition-all ${
-                      idx === recommendationIndex ? 'bg-white w-6' : 'bg-white bg-opacity-40 w-2'
+                      idx === recommendationIndex ? 'bg-[#5a1f2a] w-6' : 'bg-[#e3b9b9] w-2'
                     }`}
                   />
                 ))}
               </div>
               <button
                 onClick={nextRecommendation}
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-lg text-sm font-semibold transition-all"
+                className="bg-[#fce8e2] hover:bg-[#e3b9b9] text-[#5a1f2a] px-4 py-2 rounded-full text-sm font-semibold transition-all"
               >
                 Berikutnya →
               </button>
