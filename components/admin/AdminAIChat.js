@@ -44,14 +44,13 @@ export function AdminAIChat() {
 
       if (!res.ok) {
         const text = await res.text();
-        let errorMessage = `Server error (${res.status})`;
+        let errorMessage = `Server error ${res.status}`;
         try {
           const parsed = JSON.parse(text);
           errorMessage = parsed.error || errorMessage;
         } catch {
-          if (res.status === 500) {
-            errorMessage = 'AI Assistant belum dikonfigurasi. Set ANTHROPIC_API_KEY di .env.local dengan API key dari console.anthropic.com';
-          }
+          const snippet = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+          errorMessage = `Server error ${res.status}. ${snippet || 'Cek Vercel function logs.'}`;
         }
         throw new Error(errorMessage);
       }

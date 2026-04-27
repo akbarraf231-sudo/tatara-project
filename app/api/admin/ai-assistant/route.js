@@ -1,6 +1,9 @@
 import { Anthropic } from '@anthropic-ai/sdk';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `Anda adalah asisten AI untuk Sinar Jaya Bakery Admin - sistem manajemen bakery online.
 
 Anda membantu owner pemula memahami dan menggunakan sistem ini. Jawab pertanyaan dalam Bahasa Indonesia yang ramah dan jelas.
