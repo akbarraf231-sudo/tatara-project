@@ -43,8 +43,17 @@ export function AdminAIChat() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Failed to get response');
+        const text = await res.text();
+        let errorMessage = `Server error (${res.status})`;
+        try {
+          const parsed = JSON.parse(text);
+          errorMessage = parsed.error || errorMessage;
+        } catch {
+          if (res.status === 500) {
+            errorMessage = 'AI Assistant belum dikonfigurasi. Set ANTHROPIC_API_KEY di .env.local dengan API key dari console.anthropic.com';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       // Stream the response
