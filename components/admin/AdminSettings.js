@@ -71,20 +71,35 @@ export function AdminSettings() {
       const data = await res.json();
       const orders = data.data || [];
 
-      const csv = [
-        ['ID', 'Tanggal', 'Nama Customer', 'No HP', 'Total', 'Status', 'Tipe Order'].join(','),
-        ...orders.map(o => [
-          o.id,
-          new Date(o.created_at).toLocaleString('id-ID'),
-          o.customer_name,
-          o.customer_phone,
-          o.total,
-          o.status,
-          o.order_type
-        ].map(v => `"${v}"`).join(','))
-      ].join('\n');
+      const { default: jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
 
-      downloadCSV(csv, 'orders.csv');
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text('LAPORAN ORDERS', 105, 20, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Generated: ${new Date().toLocaleString('id-ID')}`, 105, 28, { align: 'center' });
+      doc.text(`Total Orders: ${orders.length}`, 105, 34, { align: 'center' });
+
+      autoTable(doc, {
+        startY: 42,
+        head: [['Tanggal', 'Customer', 'No HP', 'Total', 'Status', 'Tipe']],
+        body: orders.map(o => [
+          new Date(o.created_at).toLocaleDateString('id-ID'),
+          o.customer_name,
+          o.customer_phone || '-',
+          `Rp ${Number(o.total).toLocaleString('id-ID')}`,
+          o.status,
+          o.order_type,
+        ]),
+        headStyles: { fillColor: [90, 31, 42], textColor: 255, fontStyle: 'bold' },
+        theme: 'striped',
+        styles: { fontSize: 8 },
+      });
+
+      doc.save(`orders-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (err) {
       setMessage({ type: 'error', text: 'Gagal export orders: ' + err.message });
     }
@@ -99,30 +114,37 @@ export function AdminSettings() {
       const data = await res.json();
       const products = data.data || [];
 
-      const csv = [
-        ['ID', 'Nama', 'Harga', 'Stok', 'Tipe', 'Aktif'].join(','),
-        ...products.map(p => [
-          p.id,
-          p.name,
-          p.price,
-          p.stock,
-          p.product_type,
-          p.is_active ? 'Ya' : 'Tidak'
-        ].map(v => `"${v}"`).join(','))
-      ].join('\n');
+      const { default: jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
 
-      downloadCSV(csv, 'products.csv');
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text('LAPORAN PRODUCTS', 105, 20, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Generated: ${new Date().toLocaleString('id-ID')}`, 105, 28, { align: 'center' });
+      doc.text(`Total Products: ${products.length}`, 105, 34, { align: 'center' });
+
+      autoTable(doc, {
+        startY: 42,
+        head: [['Nama Produk', 'Harga', 'Stok', 'Tipe', 'Status']],
+        body: products.map(p => [
+          p.name,
+          `Rp ${Number(p.price).toLocaleString('id-ID')}`,
+          p.stock.toString(),
+          p.product_type || 'daily',
+          p.is_active ? 'Aktif' : 'Tidak Aktif',
+        ]),
+        headStyles: { fillColor: [90, 31, 42], textColor: 255, fontStyle: 'bold' },
+        theme: 'striped',
+        styles: { fontSize: 9 },
+      });
+
+      doc.save(`products-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (err) {
       setMessage({ type: 'error', text: 'Gagal export products: ' + err.message });
     }
-  }
-
-  function downloadCSV(csv, filename) {
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
   }
 
   if (loading) return <div className="text-[#5a1f2a]">Loading settings...</div>;
@@ -270,7 +292,7 @@ export function AdminSettings() {
             🍰 Export Products
           </button>
         </div>
-        <p className="text-xs text-[#722f37] mt-3">Data akan di-download sebagai file CSV</p>
+        <p className="text-xs text-[#722f37] mt-3">Data akan di-download sebagai file PDF</p>
       </div>
     </div>
   );

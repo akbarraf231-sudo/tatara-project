@@ -48,42 +48,102 @@ export function AdminInsights() {
 
   const currentRec = insights.recommendations[recommendationIndex];
 
-  const exportToCSV = () => {
-    const timestamp = new Date().toLocaleString('id-ID');
-    const data = [
-      ['LAPORAN INSIGHTS - ' + timestamp],
-      [],
-      ['RINGKASAN REVENUE'],
-      ['Total Revenue', `Rp ${insights.revenue.total.toLocaleString('id-ID')}`],
-      ['Revenue Hari Ini', `Rp ${insights.revenue.today.toLocaleString('id-ID')}`],
-      ['Revenue Bulan Ini', `Rp ${insights.revenue.month.toLocaleString('id-ID')}`],
-      ['Revenue Daily', `Rp ${insights.revenue.daily.toLocaleString('id-ID')}`],
-      ['Revenue Special', `Rp ${insights.revenue.special.toLocaleString('id-ID')}`],
-      [],
-      ['EXPENSES & PROFIT'],
-      ['Total Expenses', `Rp ${insights.expenses.total.toLocaleString('id-ID')}`],
-      ['Total Profit', `Rp ${insights.profit.total.toLocaleString('id-ID')}`],
-      ['Profit Margin', `${insights.profit.margin}%`],
-      [],
-      ['TOTAL ORDERS'],
-      ['Total Orders', insights.orders.total],
-      [],
-      ['TOP PRODUCTS'],
-      ['Product Name', 'Quantity', 'Revenue'],
-      ...insights.topProducts.map((p) => [p.name, p.qty, `Rp ${p.revenue.toLocaleString('id-ID')}`]),
-      [],
-      ['LOW STOCK PRODUCTS'],
-      ['Product Name', 'Current Stock', 'Threshold'],
-      ...insights.lowStockProducts.map((p) => [p.name, p.stock, p.threshold]),
-    ];
+  const exportToPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
 
-    const csv = data.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `insights-${new Date().toISOString().split('T')[0]}.csv`);
-    link.click();
+    const doc = new jsPDF();
+    const timestamp = new Date().toLocaleString('id-ID');
+    let yPos = 20;
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('LAPORAN INSIGHTS', 105, yPos, { align: 'center' });
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated: ${timestamp}`, 105, yPos, { align: 'center' });
+    yPos += 12;
+
+    // Revenue Summary
+    autoTable(doc, {
+      startY: yPos,
+      head: [['RINGKASAN REVENUE', 'JUMLAH']],
+      body: [
+        ['Total Revenue', `Rp ${insights.revenue.total.toLocaleString('id-ID')}`],
+        ['Revenue Hari Ini', `Rp ${insights.revenue.today.toLocaleString('id-ID')}`],
+        ['Revenue Bulan Ini', `Rp ${insights.revenue.month.toLocaleString('id-ID')}`],
+        ['Revenue Daily Products', `Rp ${insights.revenue.daily.toLocaleString('id-ID')}`],
+        ['Revenue Special Products', `Rp ${insights.revenue.special.toLocaleString('id-ID')}`],
+      ],
+      headStyles: { fillColor: [90, 31, 42], textColor: 255, fontStyle: 'bold' },
+      theme: 'striped',
+    });
+    yPos = doc.lastAutoTable.finalY + 8;
+
+    // Expenses & Profit
+    autoTable(doc, {
+      startY: yPos,
+      head: [['EXPENSES & PROFIT', 'JUMLAH']],
+      body: [
+        ['Total Expenses', `Rp ${insights.expenses.total.toLocaleString('id-ID')}`],
+        ['Total Profit', `Rp ${insights.profit.total.toLocaleString('id-ID')}`],
+        ['Profit Margin', `${insights.profit.margin}%`],
+        ['Total Orders', `${insights.orders.total}`],
+      ],
+      headStyles: { fillColor: [21, 128, 61], textColor: 255, fontStyle: 'bold' },
+      theme: 'striped',
+    });
+    yPos = doc.lastAutoTable.finalY + 8;
+
+    // Top Products
+    if (insights.topProducts.length > 0) {
+      autoTable(doc, {
+        startY: yPos,
+        head: [['TOP PRODUCTS - Nama', 'Qty', 'Revenue']],
+        body: insights.topProducts.map((p) => [
+          p.name,
+          p.qty.toString(),
+          `Rp ${p.revenue.toLocaleString('id-ID')}`,
+        ]),
+        headStyles: { fillColor: [194, 65, 12], textColor: 255, fontStyle: 'bold' },
+        theme: 'striped',
+      });
+      yPos = doc.lastAutoTable.finalY + 8;
+    }
+
+    // Low Stock Products
+    if (insights.lowStockProducts.length > 0) {
+      autoTable(doc, {
+        startY: yPos,
+        head: [['LOW STOCK - Produk', 'Stok', 'Threshold']],
+        body: insights.lowStockProducts.map((p) => [
+          p.name,
+          p.stock.toString(),
+          p.threshold.toString(),
+        ]),
+        headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold' },
+        theme: 'striped',
+      });
+    }
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128);
+      doc.text(
+        `Sinar Jaya Bakery - Page ${i} of ${pageCount}`,
+        105,
+        doc.internal.pageSize.height - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save(`insights-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   return (
@@ -91,10 +151,10 @@ export function AdminInsights() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Business Intelligence</h2>
         <button
-          onClick={exportToCSV}
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          onClick={exportToPDF}
+          className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
         >
-          📥 Export CSV
+          📄 Export PDF
         </button>
       </div>
 
