@@ -48,9 +48,55 @@ export function AdminInsights() {
 
   const currentRec = insights.recommendations[recommendationIndex];
 
+  const exportToCSV = () => {
+    const timestamp = new Date().toLocaleString('id-ID');
+    const data = [
+      ['LAPORAN INSIGHTS - ' + timestamp],
+      [],
+      ['RINGKASAN REVENUE'],
+      ['Total Revenue', `Rp ${insights.revenue.total.toLocaleString('id-ID')}`],
+      ['Revenue Hari Ini', `Rp ${insights.revenue.today.toLocaleString('id-ID')}`],
+      ['Revenue Bulan Ini', `Rp ${insights.revenue.month.toLocaleString('id-ID')}`],
+      ['Revenue Daily', `Rp ${insights.revenue.daily.toLocaleString('id-ID')}`],
+      ['Revenue Special', `Rp ${insights.revenue.special.toLocaleString('id-ID')}`],
+      [],
+      ['EXPENSES & PROFIT'],
+      ['Total Expenses', `Rp ${insights.expenses.total.toLocaleString('id-ID')}`],
+      ['Total Profit', `Rp ${insights.profit.total.toLocaleString('id-ID')}`],
+      ['Profit Margin', `${insights.profit.margin}%`],
+      [],
+      ['TOTAL ORDERS'],
+      ['Total Orders', insights.orders.total],
+      [],
+      ['TOP PRODUCTS'],
+      ['Product Name', 'Quantity', 'Revenue'],
+      ...insights.topProducts.map((p) => [p.name, p.qty, `Rp ${p.revenue.toLocaleString('id-ID')}`]),
+      [],
+      ['LOW STOCK PRODUCTS'],
+      ['Product Name', 'Current Stock', 'Threshold'],
+      ...insights.lowStockProducts.map((p) => [p.name, p.stock, p.threshold]),
+    ];
+
+    const csv = data.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `insights-${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+  };
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Business Intelligence</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-[#5a1f2a]">📊 Business Intelligence</h2>
+        <button
+          onClick={exportToCSV}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+        >
+          📥 Export CSV
+        </button>
+      </div>
 
       {/* Revenue Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
