@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { Cart } from '@/components/Cart';
 
-export function HomePage({ initialProducts, initialContent, initialLocationLink }) {
+export function HomePage({ initialProducts, initialContent, initialLocationLink, storeStatus, closedMessage }) {
   const [products] = useState(initialProducts || []);
   const [locationLink] = useState(initialLocationLink || '');
   const [content] = useState(initialContent);
   const [splashGone, setSplashGone] = useState(false);
+  const isClosed = storeStatus === 'closed';
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -30,6 +31,11 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink 
 
   return (
     <main className="flex-1 bg-[#fce8e2]">
+      {isClosed && (
+        <div className="bg-red-500 text-white py-4 px-6 text-center font-semibold">
+          🔴 {closedMessage}
+        </div>
+      )}
       {/* HERO */}
       <section id="home" className="relative overflow-hidden">
         <div className="grid md:grid-cols-2 md:min-h-[90vh]">

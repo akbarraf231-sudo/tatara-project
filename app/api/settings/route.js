@@ -23,6 +23,8 @@ export async function GET() {
         cs_whatsapp_number: '',
         special_lead_time_days: 3,
         site_logo_url: '',
+        store_status: 'open',
+        closed_message: 'Toko sedang tutup. Terima kasih!',
       },
     });
   } catch (err) {
@@ -46,6 +48,8 @@ export async function PUT(request) {
       cs_whatsapp_number,
       special_lead_time_days,
       site_logo_url,
+      store_status,
+      closed_message,
     } = body;
 
     const { data: existing } = await supabaseServer
@@ -65,6 +69,8 @@ export async function PUT(request) {
       payload.special_lead_time_days = parseInt(special_lead_time_days) || 3;
     }
     if (site_logo_url !== undefined) payload.site_logo_url = site_logo_url;
+    if (store_status !== undefined) payload.store_status = store_status === 'closed' ? 'closed' : 'open';
+    if (closed_message !== undefined) payload.closed_message = closed_message || 'Toko sedang tutup. Terima kasih!';
 
     async function tryWrite(p) {
       if (existing) {

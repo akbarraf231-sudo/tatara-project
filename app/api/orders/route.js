@@ -15,6 +15,20 @@ export async function POST(request) {
       notes,
     } = body;
 
+    // Check if store is open
+    const { data: settings } = await supabaseServer
+      .from('settings')
+      .select('store_status, closed_message')
+      .limit(1)
+      .maybeSingle();
+
+    if (settings?.store_status === 'closed') {
+      return NextResponse.json(
+        { success: false, error: settings.closed_message || 'Toko sedang tutup' },
+        { status: 503 }
+      );
+    }
+
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Items are required' },

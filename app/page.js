@@ -70,7 +70,7 @@ export default async function Home() {
       .catch(() => ({ data: [] })),
     supabaseServer
       .from('settings')
-      .select('location_link')
+      .select('location_link, store_status, closed_message')
       .limit(1)
       .maybeSingle()
       .then((r) => r)
@@ -86,6 +86,8 @@ export default async function Home() {
 
   const products = productsRes.data || [];
   const locationLink = settingsRes.data?.location_link || '';
+  const storeStatus = settingsRes.data?.store_status || 'open';
+  const closedMessage = settingsRes.data?.closed_message || 'Toko sedang tutup';
   const content = mergeContent(landingRes.data);
 
   return (
@@ -93,6 +95,8 @@ export default async function Home() {
       initialProducts={products}
       initialContent={content}
       initialLocationLink={locationLink}
+      storeStatus={storeStatus}
+      closedMessage={closedMessage}
     />
   );
 }
