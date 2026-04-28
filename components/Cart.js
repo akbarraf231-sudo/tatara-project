@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cartContext';
 import { PaymentModal } from './PaymentModal';
 
-export function Cart() {
+export function Cart({ disabled }) {
   const { items, removeItem, updateQty, total, clearCart, hasSpecialItems } = useCart();
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -310,13 +310,19 @@ export function Cart() {
                 </div>
               )}
 
-              <button
-                onClick={handleCheckout}
-                disabled={submitting || !customerName.trim() || !customerPhone.trim()}
-                className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
-              >
-                {submitting ? '⏳ Memproses...' : '💳 Checkout & Bayar'}
-              </button>
+              {disabled ? (
+                <button disabled className="w-full bg-gray-400 text-white font-bold py-4 px-4 rounded-full cursor-not-allowed">
+                  🔴 Toko Sedang Tutup
+                </button>
+              ) : (
+                <button
+                  onClick={handleCheckout}
+                  disabled={submitting || !customerName.trim() || !customerPhone.trim()}
+                  className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
+                >
+                  {submitting ? '⏳ Memproses...' : '💳 Checkout & Bayar'}
+                </button>
+              )}
             </div>
           </>
         )}

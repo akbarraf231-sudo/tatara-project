@@ -131,13 +131,13 @@ function VariantModal({ product, flavors, sizes, maxFlavors, onClose, onConfirm 
   );
 }
 
-export function ProductCard({ product }) {
+export function ProductCard({ product, disabled }) {
   const { addItem } = useCart();
   const [favorite, setFavorite] = useState(false);
   const [added, setAdded] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
-  const inStock = product.stock > 0;
+  const inStock = product.stock > 0 && !disabled;
   const isSpecial = (product.product_type || 'daily') === 'special';
   const flavors = Array.isArray(product.flavors) ? product.flavors : [];
   const sizes = Array.isArray(product.sizes) ? product.sizes : [];

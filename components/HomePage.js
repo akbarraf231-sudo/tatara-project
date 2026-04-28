@@ -134,7 +134,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
           )}
           {dailyProducts.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {dailyProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+              {dailyProducts.map((p) => <ProductCard key={p.id} product={p} disabled={isClosed} />)}
             </div>
           )}
         </div>
@@ -156,7 +156,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
           )}
           {specialProducts.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {specialProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+              {specialProducts.map((p) => <ProductCard key={p.id} product={p} disabled={isClosed} />)}
             </div>
           )}
         </div>
@@ -166,7 +166,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
       <section id="cart" className="py-10 sm:py-16 px-3 sm:px-4 bg-[#c89292]">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-4xl font-bold text-center text-white mb-6 sm:mb-8">🛒 {content.order_title}</h2>
-          <Cart />
+          <Cart disabled={isClosed} />
         </div>
       </section>
 
