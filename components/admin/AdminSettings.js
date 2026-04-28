@@ -11,6 +11,8 @@ export function AdminSettings() {
     cs_whatsapp_number: '',
     special_lead_time_days: 3,
     site_logo_url: '',
+    store_status: 'open',
+    closed_message: 'Toko sedang tutup. Terima kasih!',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,6 +31,8 @@ export function AdminSettings() {
         cs_whatsapp_number: data.data?.cs_whatsapp_number || '',
         special_lead_time_days: data.data?.special_lead_time_days ?? 3,
         site_logo_url: data.data?.site_logo_url || '',
+        store_status: data.data?.store_status || 'open',
+        closed_message: data.data?.closed_message || 'Toko sedang tutup. Terima kasih!',
       });
     } catch (err) {
       console.error('Failed to fetch settings:', err);
@@ -56,6 +60,69 @@ export function AdminSettings() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function exportOrders() {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/orders?limit=10000', {
+        headers: { 'x-admin-token': token },
+      });
+      const data = await res.json();
+      const orders = data.data || [];
+
+      const csv = [
+        ['ID', 'Tanggal', 'Nama Customer', 'No HP', 'Total', 'Status', 'Tipe Order'].join(','),
+        ...orders.map(o => [
+          o.id,
+          new Date(o.created_at).toLocaleString('id-ID'),
+          o.customer_name,
+          o.customer_phone,
+          o.total,
+          o.status,
+          o.order_type
+        ].map(v => `"${v}"`).join(','))
+      ].join('\n');
+
+      downloadCSV(csv, 'orders.csv');
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Gagal export orders: ' + err.message });
+    }
+  }
+
+  async function exportProducts() {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/products', {
+        headers: { 'x-admin-token': token },
+      });
+      const data = await res.json();
+      const products = data.data || [];
+
+      const csv = [
+        ['ID', 'Nama', 'Harga', 'Stok', 'Tipe', 'Aktif'].join(','),
+        ...products.map(p => [
+          p.id,
+          p.name,
+          p.price,
+          p.stock,
+          p.product_type,
+          p.is_active ? 'Ya' : 'Tidak'
+        ].map(v => `"${v}"`).join(','))
+      ].join('\n');
+
+      downloadCSV(csv, 'products.csv');
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Gagal export products: ' + err.message });
+    }
+  }
+
+  function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
   }
 
   if (loading) return <div className="text-[#5a1f2a]">Loading settings...</div>;
@@ -131,6 +198,44 @@ export function AdminSettings() {
           />
         </div>
 
+        <div className="border-t-2 border-[#e3b9b9] pt-6">
+          <label className="block text-sm font-bold text-[#5a1f2a] mb-4">🔴 Status Toko</label>
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => setSettings({ ...settings, store_status: 'open' })}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                settings.store_status === 'open'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🟢 Buka
+            </button>
+            <button
+              onClick={() => setSettings({ ...settings, store_status: 'closed' })}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                settings.store_status === 'closed'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🔴 Tutup
+            </button>
+          </div>
+          {settings.store_status === 'closed' && (
+            <div>
+              <label className="block text-xs font-bold text-[#5a1f2a] mb-2">Pesan saat toko tutup:</label>
+              <textarea
+                value={settings.closed_message}
+                onChange={(e) => setSettings({ ...settings, closed_message: e.target.value })}
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 text-[#5a1f2a] text-sm"
+                rows="2"
+                placeholder="Toko sedang tutup..."
+              />
+            </div>
+          )}
+        </div>
+
         {message && (
           <div className={`p-3 rounded-lg ${
             message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200'
@@ -147,6 +252,25 @@ export function AdminSettings() {
         >
           {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
         </button>
+      </div>
+
+      <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-6 max-w-2xl shadow-md">
+        <h3 className="text-lg font-bold text-[#5a1f2a] mb-4">📊 Export Data</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={exportOrders}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+          >
+            📋 Export Orders
+          </button>
+          <button
+            onClick={exportProducts}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+          >
+            🍰 Export Products
+          </button>
+        </div>
+        <p className="text-xs text-[#722f37] mt-3">Data akan di-download sebagai file CSV</p>
       </div>
     </div>
   );
