@@ -90,36 +90,25 @@ RETURNS TABLE (
   status TEXT,
   total_count BIGINT
 ) LANGUAGE SQL STABLE AS $$
-WITH product_sales AS (
-  SELECT
-    p.id,
-    p.name,
-    p.stock,
-    COALESCE(p.restock_threshold, 10) as threshold,
-    COALESCE(p.unit_of_measurement, 'pcs') as unit,
-    p.price,
-    COALESCE(SUM(oi.qty), 0)::BIGINT as total_qty
-  FROM products p
-  LEFT JOIN order_items oi ON oi.product_id = p.id
-  GROUP BY p.id, p.name, p.stock, p.restock_threshold, p.unit_of_measurement, p.price
-)
 SELECT
-  ps.id,
-  ps.name,
-  ps.stock,
-  ps.threshold,
-  ps.unit,
-  ps.price,
-  ps.total_qty,
-  (ps.stock < ps.threshold),
+  p.id::BIGINT,
+  p.name::TEXT,
+  p.stock::INT,
+  COALESCE(p.restock_threshold, 10)::INT,
+  COALESCE(p.unit_of_measurement, 'pcs')::TEXT,
+  p.price::NUMERIC,
+  COALESCE(SUM(oi.qty), 0)::BIGINT,
+  (p.stock < COALESCE(p.restock_threshold, 10))::BOOLEAN,
   CASE
-    WHEN ps.stock = 0 THEN 'outofstock'::TEXT
-    WHEN ps.stock < ps.threshold THEN 'low'::TEXT
+    WHEN p.stock = 0 THEN 'outofstock'::TEXT
+    WHEN p.stock < COALESCE(p.restock_threshold, 10) THEN 'low'::TEXT
     ELSE 'normal'::TEXT
-  END,
-  (SELECT COUNT(*) FROM product_sales)::BIGINT
-FROM product_sales
-ORDER BY ps.id
+  END::TEXT,
+  (SELECT COUNT(*) FROM products)::BIGINT
+FROM products p
+LEFT JOIN order_items oi ON oi.product_id = p.id
+GROUP BY p.id, p.name, p.stock, p.restock_threshold, p.unit_of_measurement, p.price
+ORDER BY p.id
 LIMIT limit_val
 OFFSET offset_val;
 $$;
