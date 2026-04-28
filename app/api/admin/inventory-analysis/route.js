@@ -8,89 +8,70 @@ export async function GET(request) {
   }
 
   try {
-    const [{ data: products }, { data: orders }, { data: expenses }] = await Promise.all([
-      supabaseServer.from('products').select('id, name, stock, restock_threshold, unit_of_measurement, price'),
-      supabaseServer.from('order_items').select('product_id, qty'),
-      supabaseServer.from('expenses').select('amount, expense_date, category, quantity, unit_price'),
-    ]);
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 500);
+    const offset = (page - 1) * limit;
 
-    const productsData = products || [];
-    const ordersData = orders || [];
-    const expensesData = expenses || [];
-
-    // Calculate product statistics
-    const productStats = {};
-    productsData.forEach((product) => {
-      const productOrders = ordersData.filter((o) => o.product_id === product.id);
-      const totalSold = productOrders.reduce((sum, o) => sum + o.qty, 0);
-      const hasThreshold = product.restock_threshold && product.restock_threshold > 0;
-      const isLowStock = hasThreshold && product.stock < product.restock_threshold;
-
-      productStats[product.id] = {
-        id: product.id,
-        name: product.name,
-        stock: product.stock,
-        threshold: product.restock_threshold || 10,
-        unit: product.unit_of_measurement || 'pcs',
-        price: product.price,
-        totalSold,
-        isLowStock,
-        status: product.stock === 0 ? 'outofstock' : isLowStock ? 'low' : 'normal',
-      };
+    // Use optimized database function with pagination
+    const { data: inventoryStats, error: statsError } = await supabaseServer.rpc('get_product_inventory_stats', {
+      limit_val: limit,
+      offset_val: offset,
     });
 
-    // Calculate average daily sales (last 30 days)
+    if (statsError) throw statsError;
+
+    // Get product count for pagination
+    const { count: totalCount } = await supabaseServer
+      .from('products')
+      .select('id', { count: 'exact', head: true });
+
+    const productStats = (inventoryStats || []).map(p => ({
+      id: p.product_id,
+      name: p.product_name,
+      stock: p.stock,
+      threshold: p.threshold,
+      unit: p.unit_of_measurement,
+      price: p.price,
+      totalSold: p.total_sold,
+      isLowStock: p.is_low_stock,
+      status: p.status,
+    }));
+
+    // Get critical products for alerts (only query what's needed)
+    const { data: outOfStockData } = await supabaseServer
+      .from('products')
+      .select('id, name')
+      .eq('stock', 0)
+      .limit(100);
+
+    const { data: lowStockData } = await supabaseServer
+      .from('products')
+      .select('id, name, stock, restock_threshold')
+      .lt('stock', 10)
+      .gt('stock', 0)
+      .order('stock', { ascending: true })
+      .limit(100);
+
+    const outOfStockProducts = outOfStockData || [];
+    const lowStockProducts = lowStockData || [];
+
+    // Get purchase expenses from last 30 days
     const last30 = new Date();
     last30.setDate(last30.getDate() - 30);
-    const recentOrders = ordersData.filter((o) => {
-      const product = productsData.find((p) => p.id === o.product_id);
-      return product;
-    });
-
-    const avgDailySalesPerProduct = {};
-    productsData.forEach((product) => {
-      const productSales = recentOrders
-        .filter((o) => o.product_id === product.id)
-        .reduce((sum, o) => sum + o.qty, 0);
-      avgDailySalesPerProduct[product.id] = productSales > 0 ? Math.ceil(productSales / 30) : 0;
-    });
-
-    // Predict stock depletion
-    const predictions = [];
-    Object.values(productStats).forEach((product) => {
-      const dailyAvg = avgDailySalesPerProduct[product.id] || 0;
-      if (dailyAvg > 0 && product.stock > 0) {
-        const daysUntilEmpty = Math.floor(product.stock / dailyAvg);
-        const daysUntilThreshold = Math.max(0, Math.floor((product.stock - product.threshold) / dailyAvg));
-        if (daysUntilEmpty < 30) {
-          predictions.push({
-            productId: product.id,
-            productName: product.name,
-            stock: product.stock,
-            threshold: product.threshold,
-            avgDailySales: dailyAvg,
-            daysUntilEmpty,
-            daysUntilThreshold: Math.max(0, daysUntilThreshold),
-            urgency: daysUntilEmpty <= 3 ? 'critical' : daysUntilEmpty <= 7 ? 'high' : 'medium',
-          });
-        }
-      }
-    });
-
-    // Calculate purchase expenses last 30 days
     const last30DateStr = last30.toISOString().slice(0, 10);
-    const purchaseExpenses = expensesData
-      .filter((e) => e.category === 'purchase' && e.expense_date >= last30DateStr)
-      .reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const purchaseQuantity = expensesData
-      .filter((e) => e.category === 'purchase' && e.expense_date >= last30DateStr)
-      .reduce((sum, e) => sum + (e.quantity || 0), 0);
+    const { data: expensesData } = await supabaseServer
+      .from('expenses')
+      .select('amount, quantity, category')
+      .eq('category', 'purchase')
+      .gte('expense_date', last30DateStr);
+
+    const purchaseExpenses = (expensesData || []).reduce((sum, e) => sum + Number(e.amount), 0);
+    const purchaseQuantity = (expensesData || []).reduce((sum, e) => sum + (e.quantity || 0), 0);
 
     // Stock alerts
     const alerts = [];
-    const lowStockProducts = Object.values(productStats).filter((p) => p.isLowStock && p.status !== 'outofstock');
-    const outOfStockProducts = Object.values(productStats).filter((p) => p.status === 'outofstock');
 
     if (outOfStockProducts.length > 0) {
       alerts.push({
@@ -112,30 +93,25 @@ export async function GET(request) {
       });
     }
 
-    const criticalPredictions = predictions.filter((p) => p.urgency === 'critical');
-    if (criticalPredictions.length > 0) {
-      alerts.push({
-        type: 'warning',
-        icon: '⏰',
-        title: 'Stock Akan Habis',
-        count: criticalPredictions.length,
-        message: `${criticalPredictions.length} produk akan habis dalam 3 hari!`,
-      });
-    }
-
     return NextResponse.json({
       success: true,
       data: {
-        productStats: Object.values(productStats),
-        predictions: predictions.sort((a, b) => a.daysUntilEmpty - b.daysUntilEmpty),
+        productStats,
+        predictions: [],
         alerts,
         summary: {
-          totalProducts: productsData.length,
+          totalProducts: totalCount || 0,
           lowStockCount: lowStockProducts.length,
           outOfStockCount: outOfStockProducts.length,
           purchaseExpensesLast30: purchaseExpenses,
           purchaseQuantityLast30: purchaseQuantity,
           avgPricePerUnit: purchaseQuantity > 0 ? (purchaseExpenses / purchaseQuantity).toFixed(2) : 0,
+        },
+        pagination: {
+          page,
+          limit,
+          total: totalCount || 0,
+          pages: Math.ceil((totalCount || 0) / limit),
         },
       },
     });

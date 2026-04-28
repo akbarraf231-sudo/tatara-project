@@ -55,8 +55,9 @@ function mergeContent(d) {
   };
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Revalidate every 60 seconds (ISR) to balance freshness with performance
+// This prevents hitting Supabase on every single page load
+export const revalidate = 60;
 
 export default async function Home() {
   const [productsRes, settingsRes, landingRes] = await Promise.all([
