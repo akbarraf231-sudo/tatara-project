@@ -79,7 +79,7 @@ CREATE OR REPLACE FUNCTION get_product_inventory_stats(
   offset_val INT DEFAULT 0
 )
 RETURNS TABLE (
-  product_id BIGINT,
+  product_id UUID,
   product_name TEXT,
   stock INT,
   threshold INT,
@@ -91,20 +91,20 @@ RETURNS TABLE (
   total_count BIGINT
 ) LANGUAGE SQL STABLE AS $$
 SELECT
-  p.id::BIGINT,
-  p.name::TEXT,
-  p.stock::INT,
-  COALESCE(p.restock_threshold, 10)::INT,
-  COALESCE(p.unit_of_measurement, 'pcs')::TEXT,
-  p.price::NUMERIC,
-  COALESCE(SUM(oi.qty), 0)::BIGINT,
-  (p.stock < COALESCE(p.restock_threshold, 10))::BOOLEAN,
+  p.id,
+  p.name,
+  p.stock,
+  COALESCE(p.restock_threshold, 10),
+  COALESCE(p.unit_of_measurement, 'pcs'),
+  p.price,
+  COALESCE(SUM(oi.qty), 0),
+  (p.stock < COALESCE(p.restock_threshold, 10)),
   CASE
-    WHEN p.stock = 0 THEN 'outofstock'::TEXT
-    WHEN p.stock < COALESCE(p.restock_threshold, 10) THEN 'low'::TEXT
-    ELSE 'normal'::TEXT
-  END::TEXT,
-  (SELECT COUNT(*) FROM products)::BIGINT
+    WHEN p.stock = 0 THEN 'outofstock'
+    WHEN p.stock < COALESCE(p.restock_threshold, 10) THEN 'low'
+    ELSE 'normal'
+  END,
+  (SELECT COUNT(*) FROM products)
 FROM products p
 LEFT JOIN order_items oi ON oi.product_id = p.id
 GROUP BY p.id, p.name, p.stock, p.restock_threshold, p.unit_of_measurement, p.price
