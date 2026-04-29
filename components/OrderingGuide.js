@@ -49,7 +49,7 @@ export function OrderingGuide() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-[#5a1f2a] text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all z-40 sm:hidden"
+        className="fixed bottom-24 right-6 bg-[#5a1f2a] text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all z-40 sm:hidden"
         title="Cara Memesan"
       >
         ❓
