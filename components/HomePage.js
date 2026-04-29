@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { Cart } from '@/components/Cart';
+import { OrderingGuide } from '@/components/OrderingGuide';
 
 export function HomePage({ initialProducts, initialContent, initialLocationLink, storeStatus, closedMessage }) {
   const [products] = useState(initialProducts || []);
@@ -107,6 +108,9 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
           </div>
         </div>
       </section>
+
+      {/* ORDERING GUIDE */}
+      <OrderingGuide />
 
       {/* CAKES INTRO */}
       <section id="cakes" className="pt-12 sm:pt-20 pb-6 sm:pb-8 px-4 bg-[#fce8e2]">

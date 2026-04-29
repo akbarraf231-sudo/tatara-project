@@ -229,6 +229,7 @@ export function ProductCard({ product, disabled }) {
                 : added ? 'bg-green-500 text-white'
                 : 'bg-[#5a1f2a] hover:bg-[#722f37] text-white'
             }`}
+            title={!inStock ? 'Produk habis' : hasVariants ? 'Pilih varian (rasa/ukuran)' : 'Langsung tambah ke keranjang'}
           >
             {!inStock ? 'Habis' : added ? '✓ Ditambahkan!' : hasVariants ? '+ Pilih Varian' : '+ Ke Keranjang'}
           </button>

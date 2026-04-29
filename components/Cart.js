@@ -150,6 +150,24 @@ export function Cart({ disabled }) {
           </div>
         ) : (
           <>
+            {/* Progress Indicator */}
+            <div className="mb-6 bg-[#fce8e2] rounded-2xl p-4">
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold mb-1">✓</div>
+                  <p className="font-semibold text-[#5a1f2a]">Dipilih</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-[#5a1f2a] text-white flex items-center justify-center font-bold mb-1">2</div>
+                  <p className="font-semibold text-[#5a1f2a]">Data Diri</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-bold mb-1">3</div>
+                  <p className="font-semibold text-[#722f37]">Bayar</p>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-3 mb-6 max-h-96 overflow-y-auto pr-2">
               {items.map((item) => (
                 <div key={item.key} className="flex items-center justify-between bg-[#fce8e2] rounded-2xl p-3 gap-3">
