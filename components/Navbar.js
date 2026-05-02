@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cartContext';
 import { AdminLoginModal } from './AdminLoginModal';
 
 export function Navbar({ initialLogoUrl = '' }) {
+  const router = useRouter();
   const { items, openCart } = useCart();
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -37,7 +39,7 @@ export function Navbar({ initialLogoUrl = '' }) {
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true);
     setIsAdminModalOpen(false);
-    window.location.href = '/admin';
+    router.push('/admin');
   };
 
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
@@ -55,7 +57,7 @@ export function Navbar({ initialLogoUrl = '' }) {
     if (logoClickCount.current >= 5) {
       logoClickCount.current = 0;
       if (isAdmin) {
-        window.location.href = '/admin';
+        router.push('/admin');
       } else {
         setIsAdminModalOpen(true);
       }

@@ -33,7 +33,7 @@ export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
 
       localStorage.setItem('adminToken', data.token);
       setPassword('');
-      onSuccess();
+      onSuccess?.();
     } catch (err) {
       setError(err.message);
     } finally {
