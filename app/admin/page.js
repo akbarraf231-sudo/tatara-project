@@ -9,6 +9,7 @@ import { AdminVouchers } from '@/components/admin/AdminVouchers';
 import { AdminExpenses } from '@/components/admin/AdminExpenses';
 import { AdminLanding } from '@/components/admin/AdminLanding';
 import { AdminSettings } from '@/components/admin/AdminSettings';
+import { AdminCustomers } from '@/components/admin/AdminCustomers';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'dashboard', label: '📊 Dashboard' },
+    { id: 'customers', label: '👥 Pelanggan' },
     { id: 'orders', label: '📦 Orders' },
     { id: 'products', label: '🍰 Products' },
     { id: 'vouchers', label: '🎟️ Vouchers' },
@@ -98,6 +100,7 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {activeTab === 'dashboard' && <AdminDashboard />}
+        {activeTab === 'customers' && <AdminCustomers />}
         {activeTab === 'orders' && <AdminOrders />}
         {activeTab === 'products' && <AdminProducts />}
         {activeTab === 'vouchers' && <AdminVouchers />}
