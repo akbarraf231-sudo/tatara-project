@@ -80,6 +80,10 @@ export function Cart({ disabled }) {
       setError('Mohon isi nomor WA kamu dulu ya 📱');
       return;
     }
+    if (!customerName.trim()) {
+      setError('Mohon isi nama kamu ya 😊 (untuk panggil saat ambil pesanan)');
+      return;
+    }
     if (hasSpecialItems && !pickupDate) {
       setError(`Mohon pilih tanggal pickup (minimal H-${leadTime})`);
       return;
@@ -205,8 +209,8 @@ export function Cart({ disabled }) {
             </div>
 
             <div className="border-t-2 border-[#e3b9b9] pt-4 space-y-3">
-              {/* UTAMA: NOMOR WHATSAPP */}
-              <div>
+              {/* UTAMA: NOMOR WHATSAPP & NAMA */}
+              <div className="space-y-2">
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -217,23 +221,15 @@ export function Cart({ disabled }) {
                   className="w-full border-2 border-[#5a1f2a] rounded-full py-3 px-4 focus:outline-none focus:border-[#722f37] text-[#5a1f2a] placeholder-[#c89292] text-base font-semibold"
                   disabled={submitting}
                 />
-                <p className="text-xs text-[#722f37] mt-1.5 px-2">Kami akan hubungi no ini untuk konfirmasi</p>
-              </div>
-
-              {/* OPTIONAL: NAMA - COLLAPSED DEFAULT */}
-              <details className="group">
-                <summary className="cursor-pointer text-sm text-[#5a1f2a] font-semibold py-2 px-2 rounded hover:bg-[#fce8e2]">
-                  + Tambahkan Nama (opsional)
-                </summary>
                 <input
                   type="text"
-                  placeholder="Nama kamu..."
+                  placeholder="Nama kamu (untuk panggil saat ambil)"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base mt-2"
+                  className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base"
                   disabled={submitting}
                 />
-              </details>
+              </div>
 
               {/* PICKUP TIME */}
               {hasSpecialItems ? (
@@ -323,7 +319,7 @@ export function Cart({ disabled }) {
               ) : (
                 <button
                   onClick={handleCheckout}
-                  disabled={submitting || !customerPhone.trim()}
+                  disabled={submitting || !customerPhone.trim() || !customerName.trim()}
                   className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
                 >
                   {submitting ? '⏳ Memproses...' : '💳 Pesan Sekarang'}
