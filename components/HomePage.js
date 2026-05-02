@@ -6,14 +6,25 @@ import { OrderingGuide } from '@/components/OrderingGuide';
 import { FloatingCartBadge } from '@/components/FloatingCartBadge';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useCart } from '@/lib/cartContext';
+import { useStockPolling } from '@/lib/useStockPolling';
 
 export function HomePage({ initialProducts, initialContent, initialLocationLink, storeStatus, closedMessage }) {
-  const [products] = useState(initialProducts || []);
+  const { products, lastUpdated, refresh: refreshStock } = useStockPolling(initialProducts);
   const [locationLink] = useState(initialLocationLink || '');
   const [content] = useState(initialContent);
   const [splashGone, setSplashGone] = useState(false);
+  const [secondsSinceUpdate, setSecondsSinceUpdate] = useState(0);
   const isClosed = storeStatus === 'closed';
   const { openCart } = useCart();
+
+  // Live counter for "Stok diperbarui Xs lalu"
+  useEffect(() => {
+    setSecondsSinceUpdate(0);
+    const t = setInterval(() => {
+      setSecondsSinceUpdate(Math.floor((Date.now() - lastUpdated) / 1000));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [lastUpdated]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -122,6 +133,15 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
             {content.cakes_title}
           </h2>
           <p className="text-[#722f37] text-sm sm:text-lg">{content.cakes_subtitle}</p>
+          <div className="mt-3 inline-flex items-center gap-2 bg-white/60 text-[#5a1f2a] text-[11px] sm:text-xs px-3 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span>
+              Stok dicek otomatis · diperbarui {secondsSinceUpdate < 5 ? 'baru saja' : `${secondsSinceUpdate}s lalu`}
+            </span>
+            <button onClick={refreshStock} className="ml-1 text-[#722f37] hover:text-[#5a1f2a] underline">
+              refresh
+            </button>
+          </div>
         </div>
       </section>
 

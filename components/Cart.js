@@ -111,6 +111,44 @@ export function Cart({ disabled, onPaymentSuccess }) {
     setSubmitting(true);
     setError(null);
 
+    // Re-check stock right before submit so customer never gets the
+    // generic "stok habis" surprise from the server. Catches the race
+    // where stock changed while they were filling out the form.
+    try {
+      const sres = await fetch('/api/products/stock', { cache: 'no-store' });
+      const sdata = await sres.json();
+      if (sdata?.success) {
+        const stockMap = new Map(sdata.data.map((p) => [p.id, p]));
+        const issues = [];
+        // Aggregate qty per (product, flavor) so multi-flavor mixes are caught
+        const need = new Map();
+        for (const it of items) {
+          const flavors = it.flavor ? it.flavor.split(', ').map((s) => s.trim()).filter(Boolean) : [null];
+          for (const f of flavors) {
+            const k = `${it.product_id}__${f || ''}`;
+            need.set(k, (need.get(k) || 0) + it.qty);
+          }
+        }
+        for (const [k, qtyNeeded] of need) {
+          const [pid, flavor] = k.split('__');
+          const fresh = stockMap.get(pid);
+          if (!fresh) { issues.push(`Produk tidak tersedia lagi`); continue; }
+          if (flavor) {
+            const v = (fresh.flavor_stocks || []).find((x) => x.flavor === flavor);
+            const stock = v?.stock ?? 0;
+            if (stock < qtyNeeded) issues.push(`"${flavor}" tinggal ${stock} (kamu pesan ${qtyNeeded})`);
+          } else {
+            if (fresh.stock < qtyNeeded) issues.push(`Stok tinggal ${fresh.stock} (kamu pesan ${qtyNeeded})`);
+          }
+        }
+        if (issues.length > 0) {
+          setError(`Stok berubah: ${issues.join(' · ')}. Atur jumlah dulu ya 🙏`);
+          setSubmitting(false);
+          return;
+        }
+      }
+    } catch {/* network blip — let the server be the final guard */}
+
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
