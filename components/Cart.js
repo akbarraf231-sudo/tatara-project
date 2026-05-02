@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cartContext';
 import { PaymentModal } from './PaymentModal';
 
-export function Cart({ disabled }) {
+export function Cart({ disabled, onPaymentSuccess }) {
   const { items, removeItem, updateQty, total, clearCart, hasSpecialItems } = useCart();
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -156,6 +156,7 @@ export function Cart({ disabled }) {
     setNotes('');
     clearVoucher();
     setOrderResult(null);
+    onPaymentSuccess?.();
   }
 
   return (

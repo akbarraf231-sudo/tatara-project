@@ -74,3 +74,13 @@ input, select, textarea {
 .animate-drawer-up {
   animation: drawer-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
+
+/* Force 24-hour time format on mobile (no AM/PM) */
+input[type="time"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile Safari: hide time picker seconds/milliseconds */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}

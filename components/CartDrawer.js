@@ -46,7 +46,7 @@ export function CartDrawer({ disabled }) {
           </button>
         </div>
         <div className="p-3 sm:p-5">
-          <Cart disabled={disabled} />
+          <Cart disabled={disabled} onPaymentSuccess={closeCart} />
         </div>
       </div>
     </div>,
