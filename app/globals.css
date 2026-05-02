@@ -57,3 +57,20 @@ input, select, textarea {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+/* Cart drawer animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes drawer-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-drawer-up {
+  animation: drawer-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}

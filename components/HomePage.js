@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
-import { Cart } from '@/components/Cart';
 import { OrderingGuide } from '@/components/OrderingGuide';
 import { FloatingCartBadge } from '@/components/FloatingCartBadge';
+import { CartDrawer } from '@/components/CartDrawer';
+import { useCart } from '@/lib/cartContext';
 
 export function HomePage({ initialProducts, initialContent, initialLocationLink, storeStatus, closedMessage }) {
   const [products] = useState(initialProducts || []);
@@ -12,6 +13,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
   const [content] = useState(initialContent);
   const [splashGone, setSplashGone] = useState(false);
   const isClosed = storeStatus === 'closed';
+  const { openCart } = useCart();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -167,14 +169,6 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
         </div>
       </section>
 
-      {/* CART */}
-      <section id="cart" className="py-10 sm:py-16 px-3 sm:px-4 bg-[#c89292]">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-bold text-center text-white mb-6 sm:mb-8">🛒 {content.order_title}</h2>
-          <Cart disabled={isClosed} />
-        </div>
-      </section>
-
       {/* ABOUT */}
       <section id="about" className="py-12 sm:py-20 px-4 bg-[#fce8e2]">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -226,7 +220,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
             <a href="#home" className="hover:text-white transition-colors">Beranda</a>
             <a href="#daily" className="hover:text-white transition-colors">Harian</a>
             <a href="#special" className="hover:text-white transition-colors">Khusus</a>
-            <a href="#cart" className="hover:text-white transition-colors">Pesan</a>
+            <button onClick={openCart} className="hover:text-white transition-colors">Pesan</button>
             <a href="#about" className="hover:text-white transition-colors">Tentang</a>
             <a href="#contact" className="hover:text-white transition-colors">Hubungi</a>
           </div>
@@ -235,6 +229,7 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
       </footer>
 
       <FloatingCartBadge />
+      <CartDrawer disabled={isClosed} />
     </main>
   );
 }

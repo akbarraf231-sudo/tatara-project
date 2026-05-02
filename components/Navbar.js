@@ -5,7 +5,7 @@ import { useCart } from '@/lib/cartContext';
 import { AdminLoginModal } from './AdminLoginModal';
 
 export function Navbar({ initialLogoUrl = '' }) {
-  const { items } = useCart();
+  const { items, openCart } = useCart();
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
@@ -92,14 +92,14 @@ export function Navbar({ initialLogoUrl = '' }) {
             <button onClick={() => scrollTo('home')} className="hover:text-[#c89292] transition-colors">Beranda</button>
             <button onClick={() => scrollTo('daily')} className="hover:text-[#c89292] transition-colors">Harian</button>
             <button onClick={() => scrollTo('special')} className="hover:text-[#c89292] transition-colors">Khusus</button>
-            <button onClick={() => scrollTo('cart')} className="hover:text-[#c89292] transition-colors">Pesan</button>
+            <button onClick={() => openCart()} className="hover:text-[#c89292] transition-colors">Pesan</button>
             <button onClick={() => scrollTo('about')} className="hover:text-[#c89292] transition-colors">Tentang</button>
             <button onClick={() => scrollTo('contact')} className="hover:text-[#c89292] transition-colors">Hubungi</button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => scrollTo('cart')}
+              onClick={() => openCart()}
               className="w-10 h-10 rounded-full bg-white hover:bg-[#e3b9b9] transition-colors flex items-center justify-center shadow-sm relative"
               title="Cart"
               aria-label="Cart"
@@ -138,7 +138,7 @@ export function Navbar({ initialLogoUrl = '' }) {
               <button onClick={() => scrollTo('home')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🏠 Beranda</button>
               <button onClick={() => scrollTo('daily')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">☀️ Harian</button>
               <button onClick={() => scrollTo('special')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🎂 Khusus</button>
-              <button onClick={() => scrollTo('cart')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🛒 Pesan</button>
+              <button onClick={() => openCart()} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">🛒 Pesan</button>
               <button onClick={() => scrollTo('about')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">ℹ️ Tentang</button>
               <button onClick={() => scrollTo('contact')} className="text-left px-6 py-3 text-[#5a1f2a] font-medium hover:bg-[#e3b9b9]/40">📍 Hubungi</button>
             </div>
