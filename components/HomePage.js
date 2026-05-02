@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { Cart } from '@/components/Cart';
 import { OrderingGuide } from '@/components/OrderingGuide';
+import { FloatingCartBadge } from '@/components/FloatingCartBadge';
 
 export function HomePage({ initialProducts, initialContent, initialLocationLink, storeStatus, closedMessage }) {
   const [products] = useState(initialProducts || []);
@@ -232,6 +233,8 @@ export function HomePage({ initialProducts, initialContent, initialLocationLink,
           <p className="mt-8 text-xs text-[#c89292]">© 2026 Sinar Jaya Bakery. Semua hak dilindungi.</p>
         </div>
       </footer>
+
+      <FloatingCartBadge />
     </main>
   );
 }
