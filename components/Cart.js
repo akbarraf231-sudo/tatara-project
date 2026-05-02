@@ -30,6 +30,22 @@ export function Cart({ disabled }) {
     }).catch(() => {});
   }, []);
 
+  // Auto-set default pickup time = waktu sekarang + 1.5 jam (WIB) untuk daily order
+  useEffect(() => {
+    if (hasSpecialItems) return;
+    if (pickupTime) return;
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 90);
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    setPickupTime(`${hh}:${mm}`);
+  }, [hasSpecialItems, pickupTime]);
+
+  function formatTimeWIB(time) {
+    if (!time) return '';
+    return `${time} WIB`;
+  }
+
   useEffect(() => {
     setVoucherInfo(null);
     setVoucherError(null);
@@ -241,23 +257,39 @@ export function Cart({ disabled }) {
                       <input type="date" value={pickupDate} min={minDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]" />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">🕐 Jam</label>
-                      <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]" />
+                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">🕐 Jam (WIB)</label>
+                      <input type="time" step="60" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a] font-bold" style={{ fontVariantNumeric: 'tabular-nums' }} />
                     </div>
                   </div>
+                  <p className="text-[10px] text-purple-700">Format 24 jam (contoh: 14:30 = jam 2 siang)</p>
                 </div>
               ) : (
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-orange-800 font-semibold">☀️ Pickup hari ini ±1-2 jam</p>
+                    <p className="text-xs text-orange-800 font-semibold">☀️ Jam Pickup Hari Ini</p>
                     <button onClick={() => setShowPickupOptions(!showPickupOptions)} className="text-xs bg-orange-200 hover:bg-orange-300 text-orange-800 font-bold px-2 py-1 rounded">
-                      {showPickupOptions ? 'Tutup' : 'Ubah'}
+                      {showPickupOptions ? 'Tutup' : 'Ubah Jam'}
                     </button>
                   </div>
                   {showPickupOptions ? (
-                    <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border-2 border-orange-200 rounded-lg py-2 px-3 text-[#5a1f2a]" />
+                    <>
+                      <input
+                        type="time"
+                        step="60"
+                        value={pickupTime}
+                        onChange={(e) => setPickupTime(e.target.value)}
+                        className="w-full border-2 border-orange-200 rounded-lg py-2 px-3 text-[#5a1f2a] text-base font-bold"
+                        style={{ fontVariantNumeric: 'tabular-nums' }}
+                      />
+                      <p className="text-[10px] text-orange-700 mt-1">Format 24 jam (WIB)</p>
+                    </>
                   ) : (
-                    <p className="text-xs text-orange-700 px-1">Klik "Ubah" jika ingin atur jam yang berbeda</p>
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <p className="text-xl font-bold text-orange-900">
+                        🕐 {formatTimeWIB(pickupTime)}
+                      </p>
+                      <p className="text-[11px] text-orange-700 mt-0.5">≈ 1.5 jam dari sekarang. Klik "Ubah Jam" jika ingin ganti.</p>
+                    </div>
                   )}
                 </div>
               )}
