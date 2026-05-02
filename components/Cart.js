@@ -6,8 +6,8 @@ import { PaymentModal } from './PaymentModal';
 
 export function Cart({ disabled }) {
   const { items, removeItem, updateQty, total, clearCart, hasSpecialItems } = useCart();
-  const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -20,6 +20,9 @@ export function Cart({ disabled }) {
   const [orderResult, setOrderResult] = useState(null);
   const [error, setError] = useState(null);
   const [leadTime, setLeadTime] = useState(3);
+  const [showPickupOptions, setShowPickupOptions] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showVoucher, setShowVoucher] = useState(false);
 
   useEffect(() => {
     fetch('/api/settings').then((r) => r.json()).then((d) => {
@@ -73,10 +76,6 @@ export function Cart({ disabled }) {
   })();
 
   async function handleCheckout() {
-    if (!customerName.trim()) {
-      setError('Mohon isi nama kamu dulu ya 😊');
-      return;
-    }
     if (!customerPhone.trim()) {
       setError('Mohon isi nomor WA kamu dulu ya 📱');
       return;
@@ -206,104 +205,93 @@ export function Cart({ disabled }) {
             </div>
 
             <div className="border-t-2 border-[#e3b9b9] pt-4 space-y-3">
-              <input
-                type="text"
-                placeholder="Nama kamu..."
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base"
-                disabled={submitting}
-              />
-              <input
-                type="tel"
-                inputMode="numeric"
-                placeholder="Nomor WhatsApp (wajib)"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base"
-                disabled={submitting}
-              />
+              {/* UTAMA: NOMOR WHATSAPP */}
+              <div>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="Nomor WhatsApp (wajib)"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  autoFocus
+                  className="w-full border-2 border-[#5a1f2a] rounded-full py-3 px-4 focus:outline-none focus:border-[#722f37] text-[#5a1f2a] placeholder-[#c89292] text-base font-semibold"
+                  disabled={submitting}
+                />
+                <p className="text-xs text-[#722f37] mt-1.5 px-2">Kami akan hubungi no ini untuk konfirmasi</p>
+              </div>
 
+              {/* OPTIONAL: NAMA - COLLAPSED DEFAULT */}
+              <details className="group">
+                <summary className="cursor-pointer text-sm text-[#5a1f2a] font-semibold py-2 px-2 rounded hover:bg-[#fce8e2]">
+                  + Tambahkan Nama (opsional)
+                </summary>
+                <input
+                  type="text"
+                  placeholder="Nama kamu..."
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full border-2 border-[#e3b9b9] rounded-full py-3 px-4 focus:outline-none focus:border-[#c89292] text-[#5a1f2a] placeholder-[#c89292] text-base mt-2"
+                  disabled={submitting}
+                />
+              </details>
+
+              {/* PICKUP TIME */}
               {hasSpecialItems ? (
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-3 space-y-2">
-                  <p className="text-xs text-purple-800 font-semibold">
-                    🎂 Pesan Khusus — minimal H-{leadTime} hari
-                  </p>
+                  <p className="text-xs text-purple-800 font-semibold">🎂 Pesan Khusus — minimal H-{leadTime} hari</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">📅 Tanggal Pickup</label>
-                      <input
-                        type="date"
-                        value={pickupDate}
-                        min={minDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
-                        className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]"
-                      />
+                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">📅 Tanggal</label>
+                      <input type="date" value={pickupDate} min={minDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]" />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">🕐 Jam Pickup</label>
-                      <input
-                        type="time"
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]"
-                      />
+                      <label className="block text-[10px] text-purple-700 font-semibold mb-1">🕐 Jam</label>
+                      <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border-2 border-purple-200 rounded-lg py-2 px-2 text-sm text-[#5a1f2a]" />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3">
-                  <label className="block text-xs text-orange-800 font-semibold mb-2">☀️ Pesan Harian — Jam Pickup Hari Ini</label>
-                  <input
-                    type="time"
-                    value={pickupTime}
-                    onChange={(e) => setPickupTime(e.target.value)}
-                    className="w-full border-2 border-orange-200 rounded-lg py-2 px-3 text-[#5a1f2a]"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-orange-800 font-semibold">☀️ Pickup hari ini ±1-2 jam</p>
+                    <button onClick={() => setShowPickupOptions(!showPickupOptions)} className="text-xs bg-orange-200 hover:bg-orange-300 text-orange-800 font-bold px-2 py-1 rounded">
+                      {showPickupOptions ? 'Tutup' : 'Ubah'}
+                    </button>
+                  </div>
+                  {showPickupOptions ? (
+                    <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border-2 border-orange-200 rounded-lg py-2 px-3 text-[#5a1f2a]" />
+                  ) : (
+                    <p className="text-xs text-orange-700 px-1">Klik "Ubah" jika ingin atur jam yang berbeda</p>
+                  )}
                 </div>
               )}
 
-              <textarea
-                placeholder="Catatan order (opsional)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={2}
-                className="w-full border-2 border-[#e3b9b9] rounded-2xl py-2 px-4 text-[#5a1f2a] placeholder-[#c89292]"
-                disabled={submitting}
-              />
+              {/* OPTIONAL: CATATAN */}
+              <details className="group">
+                <summary className="cursor-pointer text-sm text-[#5a1f2a] font-semibold py-2 px-2 rounded hover:bg-[#fce8e2]">
+                  + Tambahkan Catatan (opsional)
+                </summary>
+                <textarea placeholder="Contoh: tanpa topping, packing terpisah" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full border-2 border-[#e3b9b9] rounded-2xl py-2 px-4 text-[#5a1f2a] placeholder-[#c89292] mt-2" disabled={submitting} />
+              </details>
 
-              {/* Voucher */}
-              <div className="bg-[#fce8e2] rounded-2xl p-3">
-                <p className="text-xs font-semibold text-[#5a1f2a] mb-2">🎟️ Kode Voucher</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Masukkan kode"
-                    value={voucherCode}
-                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                    className="flex-1 border-2 border-[#e3b9b9] rounded-full py-2 px-3 text-[#5a1f2a] uppercase"
-                  />
+              {/* OPTIONAL: VOUCHER */}
+              <details className="group">
+                <summary className="cursor-pointer text-sm text-[#5a1f2a] font-semibold py-2 px-2 rounded hover:bg-[#fce8e2]">
+                  🎁 Punya Kode Promo?
+                </summary>
+                <div className="flex gap-2 mt-2">
+                  <input type="text" placeholder="Masukkan kode" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value.toUpperCase())} className="flex-1 border-2 border-[#e3b9b9] rounded-full py-2 px-3 text-[#5a1f2a] uppercase" />
                   {voucherInfo ? (
-                    <button onClick={clearVoucher} className="bg-red-500 text-white px-4 py-2 rounded-full font-semibold text-sm">
-                      Hapus
-                    </button>
+                    <button onClick={clearVoucher} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold text-sm">Hapus</button>
                   ) : (
-                    <button
-                      onClick={applyVoucher}
-                      disabled={validatingVoucher}
-                      className="bg-[#5a1f2a] text-white px-4 py-2 rounded-full font-semibold text-sm disabled:bg-gray-400"
-                    >
-                      {validatingVoucher ? '...' : 'Terapkan'}
+                    <button onClick={applyVoucher} disabled={validatingVoucher} className="bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white px-4 py-2 rounded-full font-semibold text-sm">
+                      {validatingVoucher ? '...' : 'Gunakan'}
                     </button>
                   )}
                 </div>
-                {voucherError && <p className="text-xs text-red-700 mt-1">⚠️ {voucherError}</p>}
-                {voucherInfo && (
-                  <p className="text-xs text-green-700 mt-1">
-                    ✅ {voucherInfo.voucher.code} — diskon Rp {discount.toLocaleString('id-ID')}
-                  </p>
-                )}
-              </div>
+                {voucherError && <p className="text-xs text-red-700 mt-1.5">⚠️ {voucherError}</p>}
+                {voucherInfo && <p className="text-xs text-green-700 mt-1.5">✅ {voucherInfo.voucher.code} — diskon Rp {discount.toLocaleString('id-ID')}</p>}
+              </details>
 
               <div className="space-y-1 pt-2">
                 <div className="flex justify-between text-sm text-[#722f37]">
@@ -335,10 +323,10 @@ export function Cart({ disabled }) {
               ) : (
                 <button
                   onClick={handleCheckout}
-                  disabled={submitting || !customerName.trim() || !customerPhone.trim()}
+                  disabled={submitting || !customerPhone.trim()}
                   className="w-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
                 >
-                  {submitting ? '⏳ Memproses...' : '💳 Checkout & Bayar'}
+                  {submitting ? '⏳ Memproses...' : '💳 Pesan Sekarang'}
                 </button>
               )}
             </div>
