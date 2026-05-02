@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useModalBackButton } from '@/lib/useModalBackButton';
 
 export function AdminLoginModal({ isOpen, onClose, onSuccess }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useModalBackButton(isOpen, onClose);
 
   if (!isOpen) return null;
 

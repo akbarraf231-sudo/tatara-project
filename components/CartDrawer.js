@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '@/lib/cartContext';
 import { Cart } from './Cart';
+import { useModalBackButton } from '@/lib/useModalBackButton';
 
 export function CartDrawer({ disabled }) {
   const { isOpen, closeCart } = useCart();
@@ -22,6 +23,8 @@ export function CartDrawer({ disabled }) {
     if (isOpen) window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, closeCart]);
+
+  useModalBackButton(isOpen, closeCart);
 
   if (!isOpen) return null;
   if (typeof window === 'undefined') return null;

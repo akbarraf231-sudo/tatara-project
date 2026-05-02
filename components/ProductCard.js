@@ -9,9 +9,16 @@ export function ProductCard({ product, disabled }) {
   const [favorite, setFavorite] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
-  const inStock = product.stock > 0 && !disabled;
   const isSpecial = (product.product_type || 'daily') === 'special';
   const productImages = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
+
+  // If product has flavor variants, total stock = sum across variants.
+  const flavorStocks = Array.isArray(product.flavor_stocks) ? product.flavor_stocks : [];
+  const hasFlavorStocks = flavorStocks.length > 0;
+  const totalStock = hasFlavorStocks
+    ? flavorStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
+    : product.stock;
+  const inStock = totalStock > 0 && !disabled;
 
   function commitAdd(opts = {}) {
     if (!inStock) return;
@@ -93,7 +100,7 @@ export function ProductCard({ product, disabled }) {
           </button>
           <div className="flex items-center justify-between gap-2">
             <p className="text-base sm:text-lg font-bold">Rp {Number(product.price).toLocaleString('id-ID')}</p>
-            <p className="text-[10px] sm:text-xs text-[#fce8e2]">{inStock ? `Stok: ${product.stock}` : 'Habis'}</p>
+            <p className="text-[10px] sm:text-xs text-[#fce8e2]">{inStock ? `Stok: ${totalStock}` : 'Habis'}</p>
           </div>
         </div>
       </div>

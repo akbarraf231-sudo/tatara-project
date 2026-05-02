@@ -52,6 +52,15 @@ export async function PATCH(request, { params }) {
 
     const { data, error } = await tryUpdate(id, updateData);
     if (error) throw error;
+
+    // Sync per-flavor stocks if provided
+    if (Array.isArray(body.flavor_stocks)) {
+      await supabaseServer.rpc('upsert_product_flavor_stocks', {
+        p_product_id: id,
+        p_flavors: body.flavor_stocks,
+      });
+    }
+
     return NextResponse.json({ success: true, data });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

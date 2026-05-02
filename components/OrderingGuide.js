@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useModalBackButton } from '@/lib/useModalBackButton';
 
 export function OrderingGuide() {
   const [isOpen, setIsOpen] = useState(false);
+  useModalBackButton(isOpen, () => setIsOpen(false));
 
   const steps = [
     {

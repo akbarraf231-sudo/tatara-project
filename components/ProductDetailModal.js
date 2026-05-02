@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalBackButton } from '@/lib/useModalBackButton';
 
 export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) {
   const [selectedFlavors, setSelectedFlavors] = useState([]);
@@ -15,8 +16,27 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
   const maxFlavors = product.max_flavors_selectable || 1;
   const productImages = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
   const isSpecial = (product.product_type || 'daily') === 'special';
-  const inStock = product.stock > 0 && !disabled;
-  const hasVariants = flavors.length > 0 || sizes.length > 0;
+
+  // Map flavor name → stock. If empty, fall back to product.stock.
+  const flavorStockMap = useMemo(() => {
+    const m = {};
+    for (const f of product.flavor_stocks || []) m[f.flavor] = f.stock;
+    return m;
+  }, [product.flavor_stocks]);
+
+  const hasFlavorStocks = Object.keys(flavorStockMap).length > 0;
+
+  // Effective stock available for the current selection.
+  const effectiveStock = useMemo(() => {
+    if (!hasFlavorStocks) return product.stock;
+    if (selectedFlavors.length === 0) {
+      const vals = Object.values(flavorStockMap);
+      return vals.length ? Math.max(...vals) : 0;
+    }
+    return Math.min(...selectedFlavors.map((f) => flavorStockMap[f] ?? 0));
+  }, [hasFlavorStocks, flavorStockMap, selectedFlavors, product.stock]);
+
+  const inStock = effectiveStock > 0 && !disabled;
   const totalPrice = (Number(product.price) + Number(selectedSize?.price || 0)) * qty;
 
   useEffect(() => {
@@ -26,9 +46,18 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
     return () => { document.body.style.overflow = prev; };
   }, []);
 
+  // Clamp qty when flavor selection changes the available stock.
+  useEffect(() => {
+    if (effectiveStock === 0) { setQty(1); return; }
+    if (qty > effectiveStock) setQty(effectiveStock);
+  }, [effectiveStock, qty]);
+
+  useModalBackButton(mounted, onClose);
+
   if (!mounted) return null;
 
   function toggleFlavor(f) {
+    if (hasFlavorStocks && (flavorStockMap[f] ?? 0) === 0) return;
     setSelectedFlavors((prev) => {
       if (prev.includes(f)) return prev.filter((x) => x !== f);
       if (prev.length >= maxFlavors) {
@@ -141,7 +170,7 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
               Rp {Number(product.price).toLocaleString('id-ID')}
             </p>
             <p className={`text-xs font-semibold px-3 py-1 rounded-full ${inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {inStock ? `Stok: ${product.stock}` : 'Habis'}
+              {inStock ? `Stok: ${effectiveStock}` : 'Habis'}
             </p>
           </div>
 
@@ -167,23 +196,38 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
               </p>
               <div className="flex flex-wrap gap-2">
                 {flavors.map((f) => {
+                  const variantStock = hasFlavorStocks ? (flavorStockMap[f] ?? 0) : null;
+                  const variantOut = hasFlavorStocks && variantStock === 0;
                   const isSelected = selectedFlavors.includes(f);
-                  const isDisabled = !isSelected && selectedFlavors.length >= maxFlavors && maxFlavors > 1;
+                  const cap = !isSelected && selectedFlavors.length >= maxFlavors && maxFlavors > 1;
+                  const isDisabled = variantOut || cap;
                   return (
                     <button
                       key={f}
                       type="button"
                       onClick={() => toggleFlavor(f)}
                       disabled={isDisabled}
+                      title={variantOut ? 'Stok rasa ini habis' : ''}
                       className={`px-3 py-2 rounded-full text-sm border-2 transition-colors font-semibold ${
                         isSelected
                           ? 'bg-[#5a1f2a] text-white border-[#5a1f2a]'
-                          : isDisabled
+                          : variantOut
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through'
+                          : cap
                           ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                           : 'bg-white text-[#5a1f2a] border-[#e3b9b9] hover:border-[#c89292]'
                       }`}
                     >
                       {isSelected && '✓ '}{f}
+                      {hasFlavorStocks && (
+                        <span className={`ml-1.5 text-[10px] font-normal ${
+                          isSelected ? 'text-white/80'
+                            : variantOut ? 'text-gray-400'
+                            : 'text-[#722f37]'
+                        }`}>
+                          {variantOut ? '(Habis)' : `(${variantStock})`}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -229,12 +273,12 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
                 >−</button>
                 <span className="w-12 text-center font-bold text-[#5a1f2a] text-lg">{qty}</span>
                 <button
-                  onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
-                  disabled={qty >= product.stock}
+                  onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))}
+                  disabled={qty >= effectiveStock}
                   className="w-9 h-9 rounded-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:opacity-50 flex items-center justify-center text-white font-bold text-lg"
                 >+</button>
               </div>
-              <p className="text-xs text-[#722f37]">Maks. {product.stock}</p>
+              <p className="text-xs text-[#722f37]">Maks. {effectiveStock}</p>
             </div>
           </div>
         </div>

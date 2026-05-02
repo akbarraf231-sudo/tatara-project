@@ -60,12 +60,18 @@ function mergeContent(d) {
 export const revalidate = 60;
 
 export default async function Home() {
-  const [productsRes, settingsRes, landingRes] = await Promise.all([
+  const [productsRes, flavorStocksRes, settingsRes, landingRes] = await Promise.all([
     supabaseServer
       .from('products')
       .select('*')
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .then((r) => r)
+      .catch(() => ({ data: [] })),
+    supabaseServer
+      .from('product_flavor_stocks')
+      .select('product_id, flavor, stock')
+      .eq('is_active', true)
       .then((r) => r)
       .catch(() => ({ data: [] })),
     supabaseServer
@@ -84,7 +90,17 @@ export default async function Home() {
       .catch(() => ({ data: null })),
   ]);
 
-  const products = productsRes.data || [];
+  const stocksByProduct = {};
+  for (const row of flavorStocksRes.data || []) {
+    if (!stocksByProduct[row.product_id]) stocksByProduct[row.product_id] = [];
+    stocksByProduct[row.product_id].push({ flavor: row.flavor, stock: row.stock });
+  }
+
+  const rawProducts = productsRes.data || [];
+  const products = rawProducts.map((p) => {
+    const fs = stocksByProduct[p.id] || [];
+    return { ...p, flavor_stocks: fs };
+  });
   const locationLink = settingsRes.data?.location_link || '';
   const storeStatus = settingsRes.data?.store_status || 'open';
   const closedMessage = settingsRes.data?.closed_message || 'Toko sedang tutup';

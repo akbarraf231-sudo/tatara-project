@@ -9,12 +9,29 @@ export async function GET(request) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    const { data, error } = await supabaseServer
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [{ data: products, error }, { data: stocks }] = await Promise.all([
+      supabaseServer
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      supabaseServer
+        .from('product_flavor_stocks')
+        .select('product_id, flavor, stock')
+        .eq('is_active', true),
+    ]);
     if (error) throw error;
-    return NextResponse.json({ success: true, data: data || [] });
+
+    const stocksByProduct = {};
+    for (const row of stocks || []) {
+      if (!stocksByProduct[row.product_id]) stocksByProduct[row.product_id] = [];
+      stocksByProduct[row.product_id].push({ flavor: row.flavor, stock: row.stock });
+    }
+    const enriched = (products || []).map((p) => ({
+      ...p,
+      flavor_stocks: stocksByProduct[p.id] || [],
+    }));
+
+    return NextResponse.json({ success: true, data: enriched });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -29,6 +46,7 @@ export async function POST(request) {
     const {
       name, price, stock, is_active, image_url, image_url_2, image_url_3,
       product_type, description, flavors, sizes, max_flavors_selectable,
+      flavor_stocks,
     } = body;
 
     if (!name || price == null || stock == null) {
@@ -75,6 +93,14 @@ export async function POST(request) {
     }
 
     if (error) throw error;
+
+    // Sync per-flavor stocks (best-effort; ignores if migration 011 not applied)
+    if (Array.isArray(flavor_stocks) && flavor_stocks.length > 0) {
+      await supabaseServer.rpc('upsert_product_flavor_stocks', {
+        p_product_id: data.id,
+        p_flavors: flavor_stocks,
+      });
+    }
 
     return NextResponse.json({ success: true, data }, { status: 201 });
   } catch (err) {

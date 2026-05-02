@@ -16,6 +16,7 @@ const EMPTY_FORM = {
   flavors: [],
   sizes: [],
   max_flavors_selectable: 1,
+  flavor_stocks: {}, // { "Cokelat": 10, "Vanilla": 5 }
 };
 
 export function AdminProducts() {
@@ -56,6 +57,8 @@ export function AdminProducts() {
   function handleEdit(product) {
     setEditingId(product.id);
     setFormMessage(null);
+    const flavorStockMap = {};
+    for (const fs of product.flavor_stocks || []) flavorStockMap[fs.flavor] = fs.stock;
     setFormData({
       name: product.name,
       price: product.price.toString(),
@@ -69,6 +72,7 @@ export function AdminProducts() {
       flavors: Array.isArray(product.flavors) ? product.flavors : [],
       sizes: Array.isArray(product.sizes) ? product.sizes : [],
       max_flavors_selectable: product.max_flavors_selectable || 1,
+      flavor_stocks: flavorStockMap,
     });
     setShowForm(true);
   }
@@ -83,12 +87,38 @@ export function AdminProducts() {
   function addFlavor() {
     const v = flavorInput.trim();
     if (!v) return;
-    setFormData({ ...formData, flavors: [...formData.flavors, v] });
+    if (formData.flavors.includes(v)) {
+      setFlavorInput('');
+      return;
+    }
+    setFormData({
+      ...formData,
+      flavors: [...formData.flavors, v],
+      flavor_stocks: { ...formData.flavor_stocks, [v]: 0 },
+    });
     setFlavorInput('');
   }
 
   function removeFlavor(idx) {
-    setFormData({ ...formData, flavors: formData.flavors.filter((_, i) => i !== idx) });
+    const removed = formData.flavors[idx];
+    const newStocks = { ...formData.flavor_stocks };
+    delete newStocks[removed];
+    setFormData({
+      ...formData,
+      flavors: formData.flavors.filter((_, i) => i !== idx),
+      flavor_stocks: newStocks,
+    });
+  }
+
+  function setFlavorStock(flavor, value) {
+    const n = parseInt(value, 10);
+    setFormData({
+      ...formData,
+      flavor_stocks: {
+        ...formData.flavor_stocks,
+        [flavor]: Number.isFinite(n) && n >= 0 ? n : 0,
+      },
+    });
   }
 
   function addSize() {
@@ -113,6 +143,12 @@ export function AdminProducts() {
     setFormMessage(null);
     try {
       const token = localStorage.getItem('adminToken');
+      const flavorStocksPayload = formData.flavors.map((f) => ({
+        flavor: f,
+        stock: Number.isFinite(parseInt(formData.flavor_stocks?.[f], 10))
+          ? parseInt(formData.flavor_stocks[f], 10)
+          : 0,
+      }));
       const data = {
         name: formData.name,
         price: parseFloat(formData.price),
@@ -126,6 +162,7 @@ export function AdminProducts() {
         flavors: formData.flavors,
         sizes: formData.sizes,
         max_flavors_selectable: parseInt(formData.max_flavors_selectable) || 1,
+        flavor_stocks: flavorStocksPayload,
       };
       const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
       const method = editingId ? 'PATCH' : 'POST';
@@ -322,6 +359,44 @@ export function AdminProducts() {
                   </span>
                 ))}
               </div>
+
+              {formData.flavors.length > 0 && (
+                <div className="bg-white border-2 border-[#e3b9b9] rounded-lg p-3 mb-3">
+                  <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">
+                    📦 Stok Per Varian Rasa
+                  </label>
+                  <p className="text-xs text-[#722f37] mb-2">
+                    Atur stok terpisah untuk setiap rasa. Saat stok rasa = 0, varian akan otomatis ditandai "Habis" dan tidak bisa dipilih customer.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {formData.flavors.map((f) => {
+                      const val = formData.flavor_stocks?.[f] ?? 0;
+                      const out = !val;
+                      return (
+                        <div key={f} className={`flex items-center gap-2 rounded-lg px-3 py-2 ${
+                          out ? 'bg-red-50 border border-red-200' : 'bg-[#fce8e2]'
+                        }`}>
+                          <span className="flex-1 text-sm font-semibold text-[#5a1f2a] truncate">{f}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={val}
+                            onChange={(e) => setFlavorStock(f, e.target.value)}
+                            className="w-20 border-2 border-[#e3b9b9] rounded-lg py-1 px-2 text-[#5a1f2a] text-sm text-center"
+                          />
+                          {out && <span className="text-[10px] font-bold text-red-700">Habis</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-[#722f37] mt-2">
+                    Total stok semua rasa: <strong>
+                      {Object.values(formData.flavor_stocks || {}).reduce((s, v) => s + (parseInt(v, 10) || 0), 0)}
+                    </strong>
+                  </p>
+                </div>
+              )}
+
               {formData.flavors.length > 0 && (
                 <div className="bg-[#fce8e2] border-2 border-[#e3b9b9] rounded-lg p-3 mt-2">
                   <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">
@@ -488,13 +563,41 @@ export function AdminProducts() {
                     <span className="font-semibold">Price:</span>{' '}
                     <span className="font-bold">Rp {Number(product.price).toLocaleString('id-ID')}</span>
                   </p>
-                  <p>
-                    <span className="font-semibold">Stock:</span>{' '}
-                    <span className={product.stock > 0 ? '' : 'text-red-600 font-bold'}>
-                      {product.stock} {product.stock > 0 ? '' : '(Habis!)'}
-                    </span>
-                  </p>
-                  {product.flavors?.length > 0 && (
+                  {(() => {
+                    const fs = Array.isArray(product.flavor_stocks) ? product.flavor_stocks : [];
+                    if (fs.length > 0) {
+                      const total = fs.reduce((s, v) => s + (v.stock || 0), 0);
+                      return (
+                        <>
+                          <p>
+                            <span className="font-semibold">Stock total:</span>{' '}
+                            <span className={total > 0 ? '' : 'text-red-600 font-bold'}>
+                              {total} {total > 0 ? '(per varian)' : '(Habis!)'}
+                            </span>
+                          </p>
+                          <div className="text-xs space-y-0.5 mt-1">
+                            {fs.map((v) => (
+                              <div key={v.flavor} className="flex justify-between bg-[#fce8e2] rounded px-2 py-0.5">
+                                <span>{v.flavor}</span>
+                                <span className={v.stock > 0 ? 'font-semibold' : 'text-red-600 font-bold'}>
+                                  {v.stock > 0 ? v.stock : 'Habis'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    }
+                    return (
+                      <p>
+                        <span className="font-semibold">Stock:</span>{' '}
+                        <span className={product.stock > 0 ? '' : 'text-red-600 font-bold'}>
+                          {product.stock} {product.stock > 0 ? '' : '(Habis!)'}
+                        </span>
+                      </p>
+                    );
+                  })()}
+                  {product.flavors?.length > 0 && !(product.flavor_stocks?.length) && (
                     <p className="text-xs"><span className="font-semibold">Rasa:</span> {product.flavors.join(', ')}</p>
                   )}
                   {product.sizes?.length > 0 && (

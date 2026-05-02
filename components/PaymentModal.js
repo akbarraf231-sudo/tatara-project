@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useModalBackButton } from '@/lib/useModalBackButton';
 
 const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
@@ -22,6 +23,8 @@ export function PaymentModal({
   const [settings, setSettings] = useState(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('cash');
+
+  useModalBackButton(isOpen, onClose);
 
   useEffect(() => {
     if (isOpen) fetchSettings();
