@@ -21,7 +21,7 @@ export function PaymentModal({
 }) {
   const [settings, setSettings] = useState(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState('qris');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   useEffect(() => {
     if (isOpen) fetchSettings();
@@ -154,27 +154,36 @@ export function PaymentModal({
           </div>
 
           <div>
-            <h3 className="font-bold text-[#5a1f2a] mb-3 text-sm sm:text-base">Pilih Pembayaran:</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-[#5a1f2a] text-sm sm:text-base">Metode Pembayaran</h3>
+              <span className="text-[10px] text-[#722f37] bg-[#fce8e2] px-2 py-0.5 rounded-full">Default: Cash</span>
+            </div>
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <button
-                onClick={() => setPaymentMethod('qris')}
-                className={`p-3 sm:p-4 rounded-2xl border-2 transition-all ${
-                  paymentMethod === 'qris' ? 'border-[#5a1f2a] bg-white shadow-md' : 'border-[#e3b9b9] bg-white hover:bg-[#e3b9b9]/30'
-                }`}
-              >
-                <div className="text-2xl sm:text-3xl mb-1">📱</div>
-                <p className="font-bold text-[#5a1f2a] text-sm sm:text-base">QRIS</p>
-                <p className="text-[10px] sm:text-xs text-[#722f37]">Scan & Pay</p>
-              </button>
-              <button
                 onClick={() => setPaymentMethod('cash')}
-                className={`p-3 sm:p-4 rounded-2xl border-2 transition-all ${
-                  paymentMethod === 'cash' ? 'border-[#5a1f2a] bg-white shadow-md' : 'border-[#e3b9b9] bg-white hover:bg-[#e3b9b9]/30'
+                className={`relative p-3 sm:p-4 rounded-2xl border-2 transition-all ${
+                  paymentMethod === 'cash' ? 'border-[#5a1f2a] bg-white shadow-md ring-2 ring-[#5a1f2a]/20' : 'border-[#e3b9b9] bg-white hover:bg-[#e3b9b9]/30'
                 }`}
               >
+                {paymentMethod === 'cash' && (
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">✓ Dipilih</span>
+                )}
                 <div className="text-2xl sm:text-3xl mb-1">💵</div>
                 <p className="font-bold text-[#5a1f2a] text-sm sm:text-base">Cash</p>
                 <p className="text-[10px] sm:text-xs text-[#722f37]">Bayar di tempat</p>
+              </button>
+              <button
+                onClick={() => setPaymentMethod('qris')}
+                className={`relative p-3 sm:p-4 rounded-2xl border-2 transition-all ${
+                  paymentMethod === 'qris' ? 'border-[#5a1f2a] bg-white shadow-md ring-2 ring-[#5a1f2a]/20' : 'border-[#e3b9b9] bg-white hover:bg-[#e3b9b9]/30'
+                }`}
+              >
+                {paymentMethod === 'qris' && (
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">✓ Dipilih</span>
+                )}
+                <div className="text-2xl sm:text-3xl mb-1">📱</div>
+                <p className="font-bold text-[#5a1f2a] text-sm sm:text-base">QRIS</p>
+                <p className="text-[10px] sm:text-xs text-[#722f37]">Scan & Pay</p>
               </button>
             </div>
           </div>
