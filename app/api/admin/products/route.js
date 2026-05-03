@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { isAdminAuthorized } from '@/lib/adminAuth';
 
-const optionalCols = ['image_url', 'image_url_2', 'image_url_3', 'product_type', 'description', 'flavors', 'sizes', 'max_flavors_selectable'];
+const optionalCols = ['image_url', 'image_url_2', 'image_url_3', 'product_type', 'description', 'flavors', 'sizes', 'max_flavors_selectable', 'badge'];
 
 export async function GET(request) {
   if (!isAdminAuthorized(request)) {
@@ -45,7 +45,7 @@ export async function POST(request) {
     const body = await request.json();
     const {
       name, price, stock, is_active, image_url, image_url_2, image_url_3,
-      product_type, description, flavors, sizes, max_flavors_selectable,
+      product_type, description, badge, flavors, sizes, max_flavors_selectable,
       flavor_stocks,
     } = body;
 
@@ -63,6 +63,7 @@ export async function POST(request) {
       is_active: is_active ?? true,
       product_type: product_type === 'special' ? 'special' : 'daily',
       description: description || null,
+      badge: badge || null,
       flavors: Array.isArray(flavors) ? flavors : [],
       sizes: Array.isArray(sizes) ? sizes : [],
       max_flavors_selectable: parseInt(max_flavors_selectable) || 1,

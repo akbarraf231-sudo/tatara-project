@@ -171,6 +171,7 @@ export function AdminProducts() {
         is_active: formData.is_active,
         product_type: formData.product_type,
         description: formData.description,
+        badge: formData.badge || null,
         flavors: formData.flavors,
         sizes: formData.sizes.map((s) => ({
           name: s.name,
