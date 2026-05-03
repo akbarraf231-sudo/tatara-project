@@ -120,25 +120,37 @@ export function Cart({ disabled, onPaymentSuccess }) {
       if (sdata?.success) {
         const stockMap = new Map(sdata.data.map((p) => [p.id, p]));
         const issues = [];
-        // Aggregate qty per (product, flavor) so multi-flavor mixes are caught
+        // Aggregate units per (product, flavor) using size.units multiplier
+        // and even-distribution across multi-flavor selections — exactly
+        // matching the server's place_order RPC math.
         const need = new Map();
         for (const it of items) {
-          const flavors = it.flavor ? it.flavor.split(', ').map((s) => s.trim()).filter(Boolean) : [null];
-          for (const f of flavors) {
+          const units = Math.max(1, Number(it.sizeUnits) || 1);
+          const totalUnits = it.qty * units;
+          const flavorList = it.flavor
+            ? it.flavor.split(', ').map((s) => s.trim()).filter(Boolean)
+            : [null];
+          const N = flavorList.length;
+          const base = Math.floor(totalUnits / N);
+          const remainder = totalUnits - base * N;
+          flavorList.forEach((f, i) => {
+            const perFlavor = base + (i < remainder ? 1 : 0);
             const k = `${it.product_id}__${f || ''}`;
-            need.set(k, (need.get(k) || 0) + it.qty);
-          }
+            need.set(k, (need.get(k) || 0) + perFlavor);
+          });
         }
-        for (const [k, qtyNeeded] of need) {
-          const [pid, flavor] = k.split('__');
+        for (const [k, unitsNeeded] of need) {
+          const sep = k.indexOf('__');
+          const pid = k.slice(0, sep);
+          const flavor = k.slice(sep + 2);
           const fresh = stockMap.get(pid);
           if (!fresh) { issues.push(`Produk tidak tersedia lagi`); continue; }
           if (flavor) {
             const v = (fresh.flavor_stocks || []).find((x) => x.flavor === flavor);
             const stock = v?.stock ?? 0;
-            if (stock < qtyNeeded) issues.push(`"${flavor}" tinggal ${stock} (kamu pesan ${qtyNeeded})`);
+            if (stock < unitsNeeded) issues.push(`"${flavor}" tinggal ${stock} (butuh ${unitsNeeded})`);
           } else {
-            if (fresh.stock < qtyNeeded) issues.push(`Stok tinggal ${fresh.stock} (kamu pesan ${qtyNeeded})`);
+            if (fresh.stock < unitsNeeded) issues.push(`Stok tinggal ${fresh.stock} (butuh ${unitsNeeded})`);
           }
         }
         if (issues.length > 0) {
@@ -236,7 +248,10 @@ export function Cart({ disabled, onPaymentSuccess }) {
                     </p>
                     {(item.flavor || item.size) && (
                       <p className="text-xs text-[#722f37]">
-                        {[item.flavor, item.size].filter(Boolean).join(' • ')}
+                        {[
+                          item.flavor,
+                          item.size && item.sizeUnits > 1 ? `${item.size} (isi ${item.sizeUnits})` : item.size,
+                        ].filter(Boolean).join(' • ')}
                       </p>
                     )}
                     <p className="text-xs text-[#c89292] font-bold">

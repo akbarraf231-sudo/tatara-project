@@ -32,6 +32,7 @@ export function AdminProducts() {
   const [flavorInput, setFlavorInput] = useState('');
   const [sizeNameInput, setSizeNameInput] = useState('');
   const [sizePriceInput, setSizePriceInput] = useState('');
+  const [sizeUnitsInput, setSizeUnitsInput] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -70,7 +71,13 @@ export function AdminProducts() {
       product_type: product.product_type || 'daily',
       description: product.description || '',
       flavors: Array.isArray(product.flavors) ? product.flavors : [],
-      sizes: Array.isArray(product.sizes) ? product.sizes : [],
+      sizes: Array.isArray(product.sizes)
+        ? product.sizes.map((s) => ({
+            name: s.name,
+            price: Number(s.price) || 0,
+            units: Number(s.units) >= 1 ? Number(s.units) : 1,
+          }))
+        : [],
       max_flavors_selectable: product.max_flavors_selectable || 1,
       flavor_stocks: flavorStockMap,
     });
@@ -125,9 +132,12 @@ export function AdminProducts() {
     const n = sizeNameInput.trim();
     if (!n) return;
     const p = sizePriceInput ? parseFloat(sizePriceInput) : 0;
-    setFormData({ ...formData, sizes: [...formData.sizes, { name: n, price: p }] });
+    const u = parseInt(sizeUnitsInput, 10);
+    const units = Number.isFinite(u) && u >= 1 ? u : 1;
+    setFormData({ ...formData, sizes: [...formData.sizes, { name: n, price: p, units }] });
     setSizeNameInput('');
     setSizePriceInput('');
+    setSizeUnitsInput('');
   }
 
   function removeSize(idx) {
@@ -160,7 +170,11 @@ export function AdminProducts() {
         product_type: formData.product_type,
         description: formData.description,
         flavors: formData.flavors,
-        sizes: formData.sizes,
+        sizes: formData.sizes.map((s) => ({
+          name: s.name,
+          price: Number(s.price) || 0,
+          units: Number(s.units) >= 1 ? Number(s.units) : 1,
+        })),
         max_flavors_selectable: parseInt(formData.max_flavors_selectable) || 1,
         flavor_stocks: flavorStocksPayload,
       };
@@ -427,32 +441,53 @@ export function AdminProducts() {
 
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-[#5a1f2a] mb-2">Varian Ukuran</label>
+              <p className="text-xs text-[#722f37] mb-2">
+                💡 <strong>Isi per Box</strong> = berapa buah donat/kue dalam 1 paket ukuran ini.
+                Contoh: "Isi 3" → 3. Dipakai untuk menghitung pengurangan stok rasa otomatis.
+              </p>
               <div className="flex gap-2 mb-2 flex-wrap">
                 <input
                   type="text"
                   value={sizeNameInput}
                   onChange={(e) => setSizeNameInput(e.target.value)}
-                  placeholder="e.g. Small / 16cm"
-                  className="flex-1 min-w-[200px] border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                  placeholder="e.g. Isi 3 / Small / 16cm"
+                  className="flex-1 min-w-[180px] border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
                 />
                 <input
                   type="number"
                   value={sizePriceInput}
                   onChange={(e) => setSizePriceInput(e.target.value)}
                   placeholder="Selisih harga"
-                  className="w-40 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                  className="w-32 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  value={sizeUnitsInput}
+                  onChange={(e) => setSizeUnitsInput(e.target.value)}
+                  placeholder="Isi (default 1)"
+                  className="w-32 border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
                 />
                 <button onClick={addSize} className="bg-[#5a1f2a] text-white px-4 py-2 rounded-lg font-semibold">
                   + Add
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {formData.sizes.map((s, i) => (
-                  <span key={i} className="bg-[#fce8e2] text-[#5a1f2a] px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                    {s.name} {s.price ? `(+Rp ${Number(s.price).toLocaleString('id-ID')})` : ''}
-                    <button onClick={() => removeSize(i)} className="font-bold">×</button>
-                  </span>
-                ))}
+                {formData.sizes.map((s, i) => {
+                  const u = Number(s.units) || 1;
+                  return (
+                    <span key={i} className="bg-[#fce8e2] text-[#5a1f2a] px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                      <span className="font-semibold">{s.name}</span>
+                      {s.price ? <span className="text-[#722f37]">+Rp {Number(s.price).toLocaleString('id-ID')}</span> : null}
+                      {u > 1 && (
+                        <span className="bg-[#5a1f2a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                          isi {u}
+                        </span>
+                      )}
+                      <button onClick={() => removeSize(i)} className="font-bold">×</button>
+                    </span>
+                  );
+                })}
               </div>
             </div>
 
@@ -601,7 +636,7 @@ export function AdminProducts() {
                     <p className="text-xs"><span className="font-semibold">Rasa:</span> {product.flavors.join(', ')}</p>
                   )}
                   {product.sizes?.length > 0 && (
-                    <p className="text-xs"><span className="font-semibold">Ukuran:</span> {product.sizes.map((s) => s.name).join(', ')}</p>
+                    <p className="text-xs"><span className="font-semibold">Ukuran:</span> {product.sizes.map((s) => `${s.name}${(Number(s.units) || 1) > 1 ? ` (isi ${s.units})` : ''}`).join(', ')}</p>
                   )}
                 </div>
 

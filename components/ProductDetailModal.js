@@ -26,15 +26,38 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
 
   const hasFlavorStocks = Object.keys(flavorStockMap).length > 0;
 
-  // Effective stock available for the current selection.
+  // "isi" per box for the chosen size (default 1).
+  const sizeUnits = Math.max(1, Number(selectedSize?.units) || 1);
+
+  // Distribute units evenly across selected flavors (remainder goes to first).
+  function unitsPerFlavor(totalUnits, numFlavors, idx) {
+    if (numFlavors <= 0) return 0;
+    const base = Math.floor(totalUnits / numFlavors);
+    const remainder = totalUnits - base * numFlavors;
+    return base + (idx < remainder ? 1 : 0);
+  }
+
+  // Max number of boxes the customer can order given current selection.
   const effectiveStock = useMemo(() => {
-    if (!hasFlavorStocks) return product.stock;
-    if (selectedFlavors.length === 0) {
-      const vals = Object.values(flavorStockMap);
-      return vals.length ? Math.max(...vals) : 0;
+    if (!hasFlavorStocks) {
+      // Fallback: product-level stock; one box consumes `sizeUnits` items.
+      return Math.floor((product.stock ?? 0) / sizeUnits);
     }
-    return Math.min(...selectedFlavors.map((f) => flavorStockMap[f] ?? 0));
-  }, [hasFlavorStocks, flavorStockMap, selectedFlavors, product.stock]);
+    if (selectedFlavors.length === 0) {
+      // Nothing picked yet → show best-case max box across all variants.
+      const best = Math.max(...Object.values(flavorStockMap));
+      return Math.floor(best / sizeUnits);
+    }
+    const N = selectedFlavors.length;
+    // For each flavor, max boxes = floor(stock / unitsPerFlavor)
+    return Math.min(
+      ...selectedFlavors.map((f, i) => {
+        const need = unitsPerFlavor(sizeUnits, N, i);
+        if (need <= 0) return Infinity;
+        return Math.floor((flavorStockMap[f] ?? 0) / need);
+      })
+    );
+  }, [hasFlavorStocks, flavorStockMap, selectedFlavors, product.stock, sizeUnits]);
 
   const inStock = effectiveStock > 0 && !disabled;
   const totalPrice = (Number(product.price) + Number(selectedSize?.price || 0)) * qty;
@@ -57,6 +80,8 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
   if (!mounted) return null;
 
   function toggleFlavor(f) {
+    // Block only when this flavor truly has zero stock. Whether one box
+    // can fit depends on current selection size, validated by handleAdd.
     if (hasFlavorStocks && (flavorStockMap[f] ?? 0) === 0) return;
     setSelectedFlavors((prev) => {
       if (prev.includes(f)) return prev.filter((x) => x !== f);
@@ -240,24 +265,42 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
             <div className="mb-4">
               <h4 className="text-xs font-bold text-[#722f37] uppercase mb-2">📏 Pilih Ukuran</h4>
               <div className="flex flex-col gap-2">
-                {sizes.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setSelectedSize(s)}
-                    className={`px-4 py-3 rounded-xl text-sm border-2 flex justify-between items-center transition-all font-semibold ${
-                      selectedSize?.name === s.name
-                        ? 'bg-[#5a1f2a] text-white border-[#5a1f2a] shadow-md'
-                        : 'bg-white text-[#5a1f2a] border-[#e3b9b9] hover:border-[#c89292]'
-                    }`}
-                  >
-                    <span>{s.name}</span>
-                    <span className="font-bold">
-                      Rp {(Number(product.price) + Number(s.price || 0)).toLocaleString('id-ID')}
-                    </span>
-                  </button>
-                ))}
+                {sizes.map((s, i) => {
+                  const u = Math.max(1, Number(s.units) || 1);
+                  const isPicked = selectedSize?.name === s.name;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className={`px-4 py-3 rounded-xl text-sm border-2 flex justify-between items-center transition-all font-semibold ${
+                        isPicked
+                          ? 'bg-[#5a1f2a] text-white border-[#5a1f2a] shadow-md'
+                          : 'bg-white text-[#5a1f2a] border-[#e3b9b9] hover:border-[#c89292]'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{s.name}</span>
+                        {u > 1 && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            isPicked ? 'bg-white/20 text-white' : 'bg-[#fce8e2] text-[#5a1f2a]'
+                          }`}>
+                            isi {u}
+                          </span>
+                        )}
+                      </span>
+                      <span className="font-bold">
+                        Rp {(Number(product.price) + Number(s.price || 0)).toLocaleString('id-ID')}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+              {sizeUnits > 1 && (
+                <p className="text-[11px] text-[#722f37] mt-1.5">
+                  💡 1 box "{selectedSize?.name}" = {sizeUnits} buah {selectedFlavors.length > 1 ? `(dibagi ${selectedFlavors.length} rasa)` : ''}
+                </p>
+              )}
             </div>
           )}
 
@@ -278,7 +321,9 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
                   className="w-9 h-9 rounded-full bg-[#5a1f2a] hover:bg-[#722f37] disabled:opacity-50 flex items-center justify-center text-white font-bold text-lg"
                 >+</button>
               </div>
-              <p className="text-xs text-[#722f37]">Maks. {effectiveStock}</p>
+              <p className="text-xs text-[#722f37]">
+                Maks. {effectiveStock} {sizeUnits > 1 ? 'box' : ''}
+              </p>
             </div>
           </div>
         </div>

@@ -28,6 +28,7 @@ export function ProductCard({ product, disabled }) {
         flavor: opts.flavor || null,
         size: opts.size?.name || null,
         sizePriceDelta: opts.size?.price || 0,
+        sizeUnits: Math.max(1, Number(opts.size?.units) || 1),
       });
     }
     setShowDetail(false);
