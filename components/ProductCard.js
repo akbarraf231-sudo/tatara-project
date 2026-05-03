@@ -46,11 +46,6 @@ export function ProductCard({ product, disabled }) {
             ⭐ {product.badge}
           </div>
         )}
-        {isSpecial && !product.badge && (
-          <div className="absolute top-3 left-3 z-10 bg-purple-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow">
-            🎂 KHUSUS
-          </div>
-        )}
         <div className="relative bg-[#fce8e2] p-3 sm:p-4 pt-6">
           <button
             onClick={(e) => { e.stopPropagation(); setFavorite(!favorite); }}

@@ -138,11 +138,6 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
               ⭐ {product.badge}
             </div>
           )}
-          {isSpecial && !product.badge && (
-            <div className="absolute top-6 left-6 z-10 bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
-              🎂 KHUSUS
-            </div>
-          )}
           <div className="relative w-full aspect-square max-h-80 flex items-center justify-center overflow-hidden rounded-2xl">
             {productImages.length > 0 ? (
               <>
