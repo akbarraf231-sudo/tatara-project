@@ -41,6 +41,25 @@ export function AdminSettings() {
     }
   }
 
+  async function autoSaveStoreStatus(newStatus) {
+    setSettings((prev) => ({ ...prev, store_status: newStatus }));
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ ...settings, store_status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      setMessage({ type: 'success', text: newStatus === 'open' ? '🟢 Toko buka' : '🔴 Toko tutup' });
+      setTimeout(() => setMessage(null), 2000);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+      setTimeout(() => setMessage(null), 2000);
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage(null);
@@ -224,7 +243,7 @@ export function AdminSettings() {
           <label className="block text-sm font-bold text-[#5a1f2a] mb-4">🔴 Status Toko</label>
           <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={() => setSettings({ ...settings, store_status: 'open' })}
+              onClick={() => autoSaveStoreStatus('open')}
               className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
                 settings.store_status === 'open'
                   ? 'bg-green-500 text-white'
@@ -234,7 +253,7 @@ export function AdminSettings() {
               🟢 Buka
             </button>
             <button
-              onClick={() => setSettings({ ...settings, store_status: 'closed' })}
+              onClick={() => autoSaveStoreStatus('closed')}
               className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
                 settings.store_status === 'closed'
                   ? 'bg-red-500 text-white'
