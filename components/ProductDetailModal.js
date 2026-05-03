@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalBackButton } from '@/lib/useModalBackButton';
+import { getBadgeStyle } from '@/lib/badgeStyle';
 
 export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) {
   const [selectedFlavors, setSelectedFlavors] = useState([]);
@@ -133,11 +134,14 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
 
         {/* Image Carousel */}
         <div className="relative bg-[#fce8e2] p-4">
-          {product.badge && (
-            <div className="absolute top-6 left-6 z-10 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-              ⭐ {product.badge}
-            </div>
-          )}
+          {(() => {
+            const bs = getBadgeStyle(product.badge);
+            return bs ? (
+              <div className={`absolute top-6 left-6 z-10 ${bs.bg} text-white text-xs font-bold px-3 py-1 rounded-full shadow`}>
+                {bs.icon} {product.badge}
+              </div>
+            ) : null;
+          })()}
           <div className="relative w-full aspect-square max-h-80 flex items-center justify-center overflow-hidden rounded-2xl">
             {productImages.length > 0 ? (
               <>

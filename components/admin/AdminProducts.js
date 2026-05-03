@@ -359,7 +359,11 @@ export function AdminProducts() {
                 placeholder="e.g. Terlaris, Baru, Promo"
                 className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
-              <p className="text-xs text-[#722f37] mt-1">Contoh: Terlaris, Baru, Promo, Limited - biarkan kosong jika tidak perlu badge</p>
+              <p className="text-xs text-[#722f37] mt-1">
+                Warna & icon otomatis menyesuaikan teks. Contoh:<br/>
+                🔥 Terlaris/Best/Hot · ✨ Baru/New · 💰 Promo/Diskon · 💎 Limited/Eksklusif<br/>
+                🎂 Khusus/Premium · 👍 Rekomendasi · 🚀 Viral · ⚡ Flash · ⭐ teks lain
+              </p>
             </div>
 
             <div className="md:col-span-2">

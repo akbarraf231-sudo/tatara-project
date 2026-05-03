@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useCart } from '@/lib/cartContext';
 import { ProductDetailModal } from './ProductDetailModal';
+import { getBadgeStyle } from '@/lib/badgeStyle';
 
 export function ProductCard({ product, disabled }) {
   const { addItem } = useCart();
@@ -11,6 +12,7 @@ export function ProductCard({ product, disabled }) {
   const [activeImg, setActiveImg] = useState(0);
   const isSpecial = (product.product_type || 'daily') === 'special';
   const productImages = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
+  const badgeStyle = getBadgeStyle(product.badge);
 
   // If product has flavor variants, total stock = sum across variants.
   const flavorStocks = Array.isArray(product.flavor_stocks) ? product.flavor_stocks : [];
@@ -41,9 +43,9 @@ export function ProductCard({ product, disabled }) {
   return (
     <>
       <div className="bg-[#e3b9b9] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-shadow relative">
-        {product.badge && (
-          <div className="absolute top-3 left-3 z-10 bg-orange-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow">
-            ⭐ {product.badge}
+        {badgeStyle && (
+          <div className={`absolute top-3 left-3 z-10 ${badgeStyle.bg} text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow`}>
+            {badgeStyle.icon} {product.badge}
           </div>
         )}
         <div className="relative bg-[#fce8e2] p-3 sm:p-4 pt-6">
