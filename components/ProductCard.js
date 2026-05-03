@@ -41,7 +41,12 @@ export function ProductCard({ product, disabled }) {
   return (
     <>
       <div className="bg-[#e3b9b9] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-shadow relative">
-        {isSpecial && (
+        {product.badge && (
+          <div className="absolute top-3 left-3 z-10 bg-orange-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow">
+            ⭐ {product.badge}
+          </div>
+        )}
+        {isSpecial && !product.badge && (
           <div className="absolute top-3 left-3 z-10 bg-purple-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow">
             🎂 KHUSUS
           </div>

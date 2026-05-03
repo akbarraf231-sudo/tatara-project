@@ -133,7 +133,12 @@ export function ProductDetailModal({ product, onClose, onAddToCart, disabled }) 
 
         {/* Image Carousel */}
         <div className="relative bg-[#fce8e2] p-4">
-          {isSpecial && (
+          {product.badge && (
+            <div className="absolute top-6 left-6 z-10 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+              ⭐ {product.badge}
+            </div>
+          )}
+          {isSpecial && !product.badge && (
             <div className="absolute top-6 left-6 z-10 bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
               🎂 KHUSUS
             </div>

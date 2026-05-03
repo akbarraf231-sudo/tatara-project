@@ -13,6 +13,7 @@ const EMPTY_FORM = {
   is_active: true,
   product_type: 'daily',
   description: '',
+  badge: '',
   flavors: [],
   sizes: [],
   max_flavors_selectable: 1,
@@ -70,6 +71,7 @@ export function AdminProducts() {
       is_active: product.is_active,
       product_type: product.product_type || 'daily',
       description: product.description || '',
+      badge: product.badge || '',
       flavors: Array.isArray(product.flavors) ? product.flavors : [],
       sizes: Array.isArray(product.sizes)
         ? product.sizes.map((s) => ({
@@ -345,6 +347,18 @@ export function AdminProducts() {
                 rows={2}
                 className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#5a1f2a] mb-1">Badge (opsional)</label>
+              <input
+                type="text"
+                value={formData.badge}
+                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                placeholder="e.g. Terlaris, Baru, Promo"
+                className="w-full border-2 border-[#e3b9b9] rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#5a1f2a] text-[#5a1f2a]"
+              />
+              <p className="text-xs text-[#722f37] mt-1">Contoh: Terlaris, Baru, Promo, Limited - biarkan kosong jika tidak perlu badge</p>
             </div>
 
             <div className="md:col-span-2">
