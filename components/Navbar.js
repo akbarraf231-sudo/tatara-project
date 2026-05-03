@@ -39,7 +39,9 @@ export function Navbar({ initialLogoUrl = '' }) {
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true);
     setIsAdminModalOpen(false);
-    router.push('/admin');
+    // Defer navigation so useModalBackButton cleanup (history.back) finishes first.
+    // Without this, the cleanup pops the entry router.push just added → user lands back on /.
+    setTimeout(() => router.push('/admin'), 0);
   };
 
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
