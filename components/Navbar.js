@@ -49,12 +49,12 @@ export function Navbar({ initialLogoUrl = '' }) {
     setMobileMenuOpen(false);
   }
 
-  // Hidden admin trigger: 5 quick clicks on the logo
+  // Hidden admin trigger: 3 quick clicks on the logo
   function handleLogoClick() {
     logoClickCount.current += 1;
     if (logoClickTimer.current) clearTimeout(logoClickTimer.current);
 
-    if (logoClickCount.current >= 5) {
+    if (logoClickCount.current >= 3) {
       logoClickCount.current = 0;
       if (isAdmin) {
         router.push('/admin');
@@ -65,7 +65,7 @@ export function Navbar({ initialLogoUrl = '' }) {
     }
 
     logoClickTimer.current = setTimeout(() => {
-      if (logoClickCount.current < 5) {
+      if (logoClickCount.current < 3) {
         logoClickCount.current = 0;
         scrollTo('home');
       }
